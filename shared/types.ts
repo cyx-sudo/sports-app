@@ -3,6 +3,7 @@ export interface User {
   id: number;
   username: string;
   email: string;
+  phone: string;
   createdAt?: string;
 }
 
@@ -15,6 +16,7 @@ export interface RegisterRequest {
   username: string;
   email: string;
   password: string;
+  phone: string;
 }
 
 export interface AuthResponse {
@@ -78,12 +80,16 @@ export interface PaginatedResponse<T> {
 }
 
 // 常用枚举
-export enum BookingStatus {
-  ACTIVE = 'active',
-  CANCELLED = 'cancelled'
-}
+export const BookingStatus = {
+  ACTIVE: 'active',
+  CANCELLED: 'cancelled'
+} as const;
 
-export enum UserRole {
-  USER = 'user',
-  ADMIN = 'admin'
-}
+export type BookingStatus = typeof BookingStatus[keyof typeof BookingStatus];
+
+export const UserRole = {
+  USER: 'user',
+  ADMIN: 'admin'
+} as const;
+
+export type UserRole = typeof UserRole[keyof typeof UserRole];

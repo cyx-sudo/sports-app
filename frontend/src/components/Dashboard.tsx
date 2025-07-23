@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { User } from '../api/auth';
+import type { User } from '../../../shared/types';
 
 interface DashboardProps {
   user: User;
@@ -28,7 +28,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-700">
-                欢迎，{user.realName}
+                欢迎，{user.username}
               </span>
               <button
                 onClick={handleLogout}
@@ -127,12 +127,6 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      真实姓名
-                    </label>
-                    <p className="mt-1 text-sm text-gray-900">{user.realName}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
                       用户名
                     </label>
                     <p className="mt-1 text-sm text-gray-900">{user.username}</p>
@@ -154,7 +148,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                       注册时间
                     </label>
                     <p className="mt-1 text-sm text-gray-900">
-                      {new Date(user.createdAt).toLocaleString()}
+                      {user.createdAt ? new Date(user.createdAt).toLocaleString() : '未知'}
                     </p>
                   </div>
                 </div>

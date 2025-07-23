@@ -1,37 +1,13 @@
 import request from '../utils/request';
-
-// 用户注册接口
-export interface RegisterParams {
-  username: string;
-  password: string;
-  email: string;
-  phone: string;
-  realName: string;
-}
-
-// 用户登录接口
-export interface LoginParams {
-  username: string;
-  password: string;
-}
-
-// 用户信息接口
-export interface User {
-  id: number;
-  username: string;
-  email: string;
-  phone: string;
-  realName: string;
-  createdAt: string;
-}
+import type { RegisterRequest, LoginRequest } from '../../../shared/types';
 
 // 注册
-export const register = (params: RegisterParams) => {
+export const register = (params: RegisterRequest) => {
   return request.post('/api/user/register', params);
 };
 
 // 登录
-export const login = (params: LoginParams) => {
+export const login = (params: LoginRequest) => {
   return request.post('/api/user/login', params);
 };
 

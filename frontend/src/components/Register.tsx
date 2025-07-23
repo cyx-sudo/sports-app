@@ -12,8 +12,7 @@ export default function Register({ onRegisterSuccess, onSwitchToLogin }: Registe
     password: '',
     confirmPassword: '',
     email: '',
-    phone: '',
-    realName: ''
+    phone: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -69,22 +68,6 @@ export default function Register({ onRegisterSuccess, onSwitchToLogin }: Registe
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
-            <div>
-              <label htmlFor="realName" className="block text-sm font-medium text-gray-700">
-                真实姓名
-              </label>
-              <input
-                id="realName"
-                name="realName"
-                type="text"
-                required
-                value={formData.realName}
-                onChange={handleChange}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="请输入真实姓名"
-              />
-            </div>
-            
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700">
                 用户名

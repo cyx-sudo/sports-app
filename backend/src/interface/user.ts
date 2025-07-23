@@ -5,7 +5,6 @@ export interface User {
   password: string;
   email: string;
   phone: string;
-  realName: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -16,7 +15,6 @@ export interface RegisterRequest {
   password: string;
   email: string;
   phone: string;
-  realName: string;
 }
 
 // 登录请求参数

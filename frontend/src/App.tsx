@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
-import Login from './components/Login'
-import Register from './components/Register'
-import Dashboard from './components/Dashboard'
-import type { User } from './api/auth'
+import { useState, useEffect } from 'react';
+import Login from './components/Login';
+import Register from './components/Register';
+import Dashboard from './components/Dashboard';
+import type { User } from '../../shared/types';
 import './App.css'
 
 type AuthMode = 'login' | 'register';
@@ -29,8 +29,8 @@ function App() {
     setLoading(false);
   }, []);
 
-  const handleLogin = (userData: User) => {
-    setUser(userData);
+  const handleLogin = (user: User) => {
+    setUser(user);
   };
 
   const handleLogout = () => {

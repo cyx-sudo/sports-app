@@ -53,8 +53,8 @@ export class UserService {
 
     // 插入新用户
     const insertUser = db.prepare(`
-      INSERT INTO users (username, password, email, phone, realName)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO users (username, password, email, phone)
+      VALUES (?, ?, ?, ?)
     `);
 
     try {
@@ -62,8 +62,7 @@ export class UserService {
         userData.username,
         hashedPassword,
         userData.email,
-        userData.phone,
-        userData.realName
+        userData.phone
       );
       return { success: true, message: '注册成功' };
     } catch (error) {
@@ -135,7 +134,7 @@ export class UserService {
     const db = this.databaseService.getDatabase();
     const users = db
       .prepare(
-        'SELECT id, username, email, phone, realName, createdAt, updatedAt FROM users'
+        'SELECT id, username, email, phone, createdAt, updatedAt FROM users'
       )
       .all() as Omit<User, 'password'>[];
     return users;
@@ -148,7 +147,7 @@ export class UserService {
     const db = this.databaseService.getDatabase();
     const user = db
       .prepare(
-        'SELECT id, username, email, phone, realName, createdAt, updatedAt FROM users WHERE id = ?'
+        'SELECT id, username, email, phone, createdAt, updatedAt FROM users WHERE id = ?'
       )
       .get(options.uid) as Omit<User, 'password'>;
     return user || null;
