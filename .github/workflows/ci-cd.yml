@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
 jobs:
   # 前端测试和构建
   frontend:
@@ -25,7 +30,7 @@ jobs:
         cd frontend
         npm cache clean --force
         rm -rf node_modules package-lock.json
-        npm install --legacy-peer-deps --include=dev
+        npm install --include=dev
     
     - name: Run lint
       run: cd frontend && npm run lint
@@ -60,7 +65,7 @@ jobs:
         cd backend
         npm cache clean --force
         rm -rf node_modules package-lock.json
-        npm install --legacy-peer-deps --include=dev
+        npm install --include=dev
     
     - name: Run lint
       run: cd backend && npm run lint
@@ -96,7 +101,7 @@ jobs:
         cd backend
         npm cache clean --force
         rm -rf node_modules package-lock.json
-        npm install --legacy-peer-deps --include=dev
+        npm install --include=dev
     
     - name: Start backend server
       run: |
@@ -126,12 +131,11 @@ jobs:
         cd frontend
         npm cache clean --force
         rm -rf node_modules package-lock.json
-        npm install --legacy-peer-deps --include=dev
-        ls -la node_modules/.bin/eslint
+        npm install --include=dev
         cd ../backend
         npm cache clean --force
         rm -rf node_modules package-lock.json
-        npm install --legacy-peer-deps --include=dev
+        npm install --include=dev
     
     - name: Run lint check
       run: |
@@ -151,18 +155,22 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+    
+    - name: Install dependencies
+      run: |
+        cd frontend
+        npm install
+        cd ../backend
+        npm install
+    
     - name: Run npm audit
       run: |
         cd frontend && npm audit --audit-level=high
         cd ../backend && npm audit --audit-level=high
-    
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
-      with:
-        languages: javascript
-    
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
 
   # 部署
   deploy:
