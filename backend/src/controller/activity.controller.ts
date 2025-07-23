@@ -1,14 +1,24 @@
-import { Inject, Controller, Post, Get, Put, Del, Body, Param, Query } from '@midwayjs/core';
+import {
+  Inject,
+  Controller,
+  Post,
+  Get,
+  Put,
+  Del,
+  Body,
+  Param,
+  Query,
+} from '@midwayjs/core';
 import { Context } from '@midwayjs/koa';
 import { ActivityService } from '../service/activity.service';
 import { BookingService } from '../service/booking.service';
 import { UserService } from '../service/user.service';
-import { 
-  CreateActivityRequest, 
-  UpdateActivityRequest, 
+import {
+  CreateActivityRequest,
+  UpdateActivityRequest,
   ActivityListRequest,
   CreateBookingRequest,
-  BookingListRequest
+  BookingListRequest,
 } from '../interface/activity';
 
 @Controller('/api/activity')
@@ -33,14 +43,14 @@ export class ActivityController {
       return {
         success: true,
         message: '活动创建成功',
-        data: activity
+        data: activity,
       };
     } catch (error) {
       this.ctx.status = 400;
       return {
         success: false,
         message: error.message,
-        data: null
+        data: null,
       };
     }
   }
@@ -53,14 +63,14 @@ export class ActivityController {
       return {
         success: true,
         message: '获取活动列表成功',
-        data: result
+        data: result,
       };
     } catch (error) {
       this.ctx.status = 400;
       return {
         success: false,
         message: error.message,
-        data: null
+        data: null,
       };
     }
   }
@@ -75,7 +85,7 @@ export class ActivityController {
         return {
           success: false,
           message: '无效的活动ID',
-          data: null
+          data: null,
         };
       }
 
@@ -85,34 +95,39 @@ export class ActivityController {
         return {
           success: false,
           message: '活动不存在',
-          data: null
+          data: null,
         };
       }
 
       // 获取预约统计
-      const bookingStats = await this.bookingService.getBookingStats(activityId);
+      const bookingStats = await this.bookingService.getBookingStats(
+        activityId
+      );
 
       return {
         success: true,
         message: '获取活动详情成功',
         data: {
           activity,
-          bookingStats
-        }
+          bookingStats,
+        },
       };
     } catch (error) {
       this.ctx.status = 400;
       return {
         success: false,
         message: error.message,
-        data: null
+        data: null,
       };
     }
   }
 
   // 更新活动（管理员功能）
   @Put('/:id')
-  async updateActivity(@Param('id') id: string, @Body() updateData: UpdateActivityRequest) {
+  async updateActivity(
+    @Param('id') id: string,
+    @Body() updateData: UpdateActivityRequest
+  ) {
     try {
       const activityId = parseInt(id);
       if (isNaN(activityId)) {
@@ -120,31 +135,34 @@ export class ActivityController {
         return {
           success: false,
           message: '无效的活动ID',
-          data: null
+          data: null,
         };
       }
 
-      const activity = await this.activityService.updateActivity(activityId, updateData);
+      const activity = await this.activityService.updateActivity(
+        activityId,
+        updateData
+      );
       if (!activity) {
         this.ctx.status = 404;
         return {
           success: false,
           message: '活动不存在',
-          data: null
+          data: null,
         };
       }
 
       return {
         success: true,
         message: '活动更新成功',
-        data: activity
+        data: activity,
       };
     } catch (error) {
       this.ctx.status = 400;
       return {
         success: false,
         message: error.message,
-        data: null
+        data: null,
       };
     }
   }
@@ -159,7 +177,7 @@ export class ActivityController {
         return {
           success: false,
           message: '无效的活动ID',
-          data: null
+          data: null,
         };
       }
 
@@ -169,21 +187,21 @@ export class ActivityController {
         return {
           success: false,
           message: '活动不存在',
-          data: null
+          data: null,
         };
       }
 
       return {
         success: true,
         message: '活动删除成功',
-        data: null
+        data: null,
       };
     } catch (error) {
       this.ctx.status = 400;
       return {
         success: false,
         message: error.message,
-        data: null
+        data: null,
       };
     }
   }
@@ -196,21 +214,24 @@ export class ActivityController {
       return {
         success: true,
         message: '获取活动分类成功',
-        data: categories
+        data: categories,
       };
     } catch (error) {
       this.ctx.status = 400;
       return {
         success: false,
         message: error.message,
-        data: null
+        data: null,
       };
     }
   }
 
   // 预约活动
   @Post('/:id/book')
-  async bookActivity(@Param('id') id: string, @Body() bookingData: CreateBookingRequest) {
+  async bookActivity(
+    @Param('id') id: string,
+    @Body() bookingData: CreateBookingRequest
+  ) {
     try {
       // 验证用户登录
       const authHeader = this.ctx.headers.authorization;
@@ -219,7 +240,7 @@ export class ActivityController {
         return {
           success: false,
           message: '未提供有效的认证令牌',
-          data: null
+          data: null,
         };
       }
 
@@ -232,32 +253,38 @@ export class ActivityController {
         return {
           success: false,
           message: '无效的活动ID',
-          data: null
+          data: null,
         };
       }
 
       // 设置活动ID
       bookingData.activityId = activityId;
 
-      const booking = await this.bookingService.createBooking(user.id, bookingData);
+      const booking = await this.bookingService.createBooking(
+        user.id,
+        bookingData
+      );
       return {
         success: true,
         message: '预约成功',
-        data: booking
+        data: booking,
       };
     } catch (error) {
       this.ctx.status = 400;
       return {
         success: false,
         message: error.message,
-        data: null
+        data: null,
       };
     }
   }
 
   // 获取活动的预约列表（管理员功能）
   @Get('/:id/bookings')
-  async getActivityBookings(@Param('id') id: string, @Query() params: BookingListRequest) {
+  async getActivityBookings(
+    @Param('id') id: string,
+    @Query() params: BookingListRequest
+  ) {
     try {
       const activityId = parseInt(id);
       if (isNaN(activityId)) {
@@ -265,22 +292,25 @@ export class ActivityController {
         return {
           success: false,
           message: '无效的活动ID',
-          data: null
+          data: null,
         };
       }
 
-      const result = await this.bookingService.getActivityBookings(activityId, params);
+      const result = await this.bookingService.getActivityBookings(
+        activityId,
+        params
+      );
       return {
         success: true,
         message: '获取活动预约列表成功',
-        data: result
+        data: result,
       };
     } catch (error) {
       this.ctx.status = 400;
       return {
         success: false,
         message: error.message,
-        data: null
+        data: null,
       };
     }
   }

@@ -19,14 +19,14 @@ export class UserController {
       return {
         success: true,
         message: result.message,
-        data: null
+        data: null,
       };
     } catch (error) {
       this.ctx.status = 400;
       return {
         success: false,
         message: error.message,
-        data: null
+        data: null,
       };
     }
   }
@@ -39,14 +39,14 @@ export class UserController {
       return {
         success: true,
         message: '登录成功',
-        data: result
+        data: result,
       };
     } catch (error) {
       this.ctx.status = 401;
       return {
         success: false,
         message: error.message,
-        data: null
+        data: null,
       };
     }
   }
@@ -62,24 +62,24 @@ export class UserController {
         return {
           success: false,
           message: '未提供有效的认证令牌',
-          data: null
+          data: null,
         };
       }
 
       const token = authHeader.substring(7);
       const user = await this.userService.getUserByToken(token);
-      
+
       return {
         success: true,
         message: '获取用户信息成功',
-        data: user
+        data: user,
       };
     } catch (error) {
       this.ctx.status = 401;
       return {
         success: false,
         message: error.message,
-        data: null
+        data: null,
       };
     }
   }
@@ -95,21 +95,21 @@ export class UserController {
         return {
           success: false,
           message: '未提供有效的认证令牌',
-          data: null
+          data: null,
         };
       }
 
       return {
         success: true,
         message: '登出成功',
-        data: null
+        data: null,
       };
     } catch (error) {
       this.ctx.status = 401;
       return {
         success: false,
         message: error.message,
-        data: null
+        data: null,
       };
     }
   }

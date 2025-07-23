@@ -10,7 +10,7 @@ export class AuthMiddleware {
     return async (ctx: Context, next: NextFunction) => {
       // 获取 Authorization header
       const authHeader = ctx.headers.authorization;
-      
+
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
         ctx.status = 401;
         ctx.body = { success: false, message: '未提供有效的认证令牌' };
@@ -22,11 +22,11 @@ export class AuthMiddleware {
       try {
         // 验证 JWT token
         const decoded = jwt.verify(token, this.jwtSecret) as any;
-        
+
         // 将用户信息添加到 ctx.state
         ctx.state.user = {
           userId: decoded.userId,
-          username: decoded.username
+          username: decoded.username,
         };
 
         await next();

@@ -11,22 +11,22 @@ export class DatabaseService {
   async init() {
     // 数据库文件路径
     const dbPath = path.join(__dirname, '../../data/sports_app.db');
-    
+
     // 创建数据库连接
     this.db = new Database(dbPath);
-    
+
     // 创建用户表
     this.createUserTable();
-    
+
     // 创建活动表
     this.createActivityTable();
-    
+
     // 创建预约表
     this.createBookingTable();
-    
+
     // 插入测试数据
     this.insertTestData();
-    
+
     console.log('Database initialized successfully');
   }
 
@@ -43,9 +43,9 @@ export class DatabaseService {
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `;
-    
+
     this.db.exec(createTableSQL);
-    
+
     // 创建索引
     this.db.exec('CREATE INDEX IF NOT EXISTS idx_username ON users(username)');
     this.db.exec('CREATE INDEX IF NOT EXISTS idx_email ON users(email)');
@@ -71,14 +71,22 @@ export class DatabaseService {
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `;
-    
+
     this.db.exec(createTableSQL);
-    
+
     // 创建索引
-    this.db.exec('CREATE INDEX IF NOT EXISTS idx_activity_category ON activities(category)');
-    this.db.exec('CREATE INDEX IF NOT EXISTS idx_activity_status ON activities(status)');
-    this.db.exec('CREATE INDEX IF NOT EXISTS idx_activity_start_time ON activities(startTime)');
-    this.db.exec('CREATE INDEX IF NOT EXISTS idx_activity_name ON activities(name)');
+    this.db.exec(
+      'CREATE INDEX IF NOT EXISTS idx_activity_category ON activities(category)'
+    );
+    this.db.exec(
+      'CREATE INDEX IF NOT EXISTS idx_activity_status ON activities(status)'
+    );
+    this.db.exec(
+      'CREATE INDEX IF NOT EXISTS idx_activity_start_time ON activities(startTime)'
+    );
+    this.db.exec(
+      'CREATE INDEX IF NOT EXISTS idx_activity_name ON activities(name)'
+    );
   }
 
   private createBookingTable() {
@@ -96,20 +104,28 @@ export class DatabaseService {
         UNIQUE(userId, activityId)
       )
     `;
-    
+
     this.db.exec(createTableSQL);
-    
+
     // 创建索引
-    this.db.exec('CREATE INDEX IF NOT EXISTS idx_booking_user ON bookings(userId)');
-    this.db.exec('CREATE INDEX IF NOT EXISTS idx_booking_activity ON bookings(activityId)');
-    this.db.exec('CREATE INDEX IF NOT EXISTS idx_booking_status ON bookings(status)');
+    this.db.exec(
+      'CREATE INDEX IF NOT EXISTS idx_booking_user ON bookings(userId)'
+    );
+    this.db.exec(
+      'CREATE INDEX IF NOT EXISTS idx_booking_activity ON bookings(activityId)'
+    );
+    this.db.exec(
+      'CREATE INDEX IF NOT EXISTS idx_booking_status ON bookings(status)'
+    );
   }
 
   private insertTestData() {
     const db = this.db;
-    
+
     // 检查是否已经有测试数据
-    const activityCount = db.prepare('SELECT COUNT(*) as count FROM activities').get() as { count: number };
+    const activityCount = db
+      .prepare('SELECT COUNT(*) as count FROM activities')
+      .get() as { count: number };
     if (activityCount.count > 0) {
       return; // 已有数据，不需要插入
     }
@@ -127,10 +143,12 @@ export class DatabaseService {
         location: '羽毛球馆A',
         capacity: 12,
         startTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 明天
-        endTime: new Date(Date.now() + 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000).toISOString(), // 明天 + 2小时
+        endTime: new Date(
+          Date.now() + 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000
+        ).toISOString(), // 明天 + 2小时
         price: 50,
         instructor: '张教练',
-        category: '羽毛球'
+        category: '羽毛球',
       },
       {
         name: '篮球训练营',
@@ -138,10 +156,12 @@ export class DatabaseService {
         location: '篮球场1号',
         capacity: 16,
         startTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), // 后天
-        endTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000).toISOString(), // 后天 + 3小时
+        endTime: new Date(
+          Date.now() + 2 * 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000
+        ).toISOString(), // 后天 + 3小时
         price: 80,
         instructor: '李教练',
-        category: '篮球'
+        category: '篮球',
       },
       {
         name: '游泳健身课',
@@ -149,10 +169,12 @@ export class DatabaseService {
         location: '游泳馆',
         capacity: 8,
         startTime: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // 三天后
-        endTime: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000 + 90 * 60 * 1000).toISOString(), // 三天后 + 1.5小时
+        endTime: new Date(
+          Date.now() + 3 * 24 * 60 * 60 * 1000 + 90 * 60 * 1000
+        ).toISOString(), // 三天后 + 1.5小时
         price: 100,
         instructor: '王教练',
-        category: '游泳'
+        category: '游泳',
       },
       {
         name: '瑜伽放松课',
@@ -160,10 +182,12 @@ export class DatabaseService {
         location: '瑜伽室',
         capacity: 15,
         startTime: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString(), // 四天后
-        endTime: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000 + 60 * 60 * 1000).toISOString(), // 四天后 + 1小时
+        endTime: new Date(
+          Date.now() + 4 * 24 * 60 * 60 * 1000 + 60 * 60 * 1000
+        ).toISOString(), // 四天后 + 1小时
         price: 60,
         instructor: '刘教练',
-        category: '瑜伽'
+        category: '瑜伽',
       },
       {
         name: '乒乓球技巧提升',
@@ -171,11 +195,13 @@ export class DatabaseService {
         location: '乒乓球馆',
         capacity: 10,
         startTime: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), // 五天后
-        endTime: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000).toISOString(), // 五天后 + 2小时
+        endTime: new Date(
+          Date.now() + 5 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000
+        ).toISOString(), // 五天后 + 2小时
         price: 45,
         instructor: '陈教练',
-        category: '乒乓球'
-      }
+        category: '乒乓球',
+      },
     ];
 
     for (const activity of activities) {

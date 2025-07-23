@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { login } from '../api/auth';
+import type { User } from '../../../shared/types';
 
 interface LoginProps {
-  onLogin: (user: any) => void;
+  onLogin: (user: User) => void;
   onSwitchToRegister: () => void;
 }
 
@@ -30,8 +31,9 @@ export default function Login({ onLogin, onSwitchToRegister }: LoginProps) {
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
       onLogin(response.data.user);
-    } catch (err: any) {
-      setError(err.message || '登录失败，请重试');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : '登录失败，请重试';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

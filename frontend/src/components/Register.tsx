@@ -43,12 +43,14 @@ export default function Register({ onRegisterSuccess, onSwitchToLogin }: Registe
     }
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { confirmPassword, ...registerData } = formData;
       await register(registerData);
       alert('注册成功！请登录');
       onRegisterSuccess();
-    } catch (err: any) {
-      setError(err.message || '注册失败，请重试');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : '注册失败，请重试';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

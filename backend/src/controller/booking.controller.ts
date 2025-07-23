@@ -1,4 +1,12 @@
-import { Inject, Controller, Get, Put, Del, Query, Param } from '@midwayjs/core';
+import {
+  Inject,
+  Controller,
+  Get,
+  Put,
+  Del,
+  Query,
+  Param,
+} from '@midwayjs/core';
 import { Context } from '@midwayjs/koa';
 import { BookingService } from '../service/booking.service';
 import { UserService } from '../service/user.service';
@@ -26,7 +34,7 @@ export class BookingController {
         return {
           success: false,
           message: '未提供有效的认证令牌',
-          data: null
+          data: null,
         };
       }
 
@@ -37,14 +45,14 @@ export class BookingController {
       return {
         success: true,
         message: '获取预约列表成功',
-        data: result
+        data: result,
       };
     } catch (error) {
       this.ctx.status = 400;
       return {
         success: false,
         message: error.message,
-        data: null
+        data: null,
       };
     }
   }
@@ -60,7 +68,7 @@ export class BookingController {
         return {
           success: false,
           message: '未提供有效的认证令牌',
-          data: null
+          data: null,
         };
       }
 
@@ -73,31 +81,34 @@ export class BookingController {
         return {
           success: false,
           message: '无效的预约ID',
-          data: null
+          data: null,
         };
       }
 
-      const success = await this.bookingService.cancelBooking(user.id, bookingId);
+      const success = await this.bookingService.cancelBooking(
+        user.id,
+        bookingId
+      );
       if (!success) {
         this.ctx.status = 404;
         return {
           success: false,
           message: '预约不存在或已取消',
-          data: null
+          data: null,
         };
       }
 
       return {
         success: true,
         message: '预约取消成功',
-        data: null
+        data: null,
       };
     } catch (error) {
       this.ctx.status = 400;
       return {
         success: false,
         message: error.message,
-        data: null
+        data: null,
       };
     }
   }
@@ -112,7 +123,7 @@ export class BookingController {
         return {
           success: false,
           message: '无效的预约ID',
-          data: null
+          data: null,
         };
       }
 
@@ -122,21 +133,21 @@ export class BookingController {
         return {
           success: false,
           message: '预约不存在或状态错误',
-          data: null
+          data: null,
         };
       }
 
       return {
         success: true,
         message: '预约确认成功',
-        data: null
+        data: null,
       };
     } catch (error) {
       this.ctx.status = 400;
       return {
         success: false,
         message: error.message,
-        data: null
+        data: null,
       };
     }
   }
@@ -151,7 +162,7 @@ export class BookingController {
         return {
           success: false,
           message: '无效的预约ID',
-          data: null
+          data: null,
         };
       }
 
@@ -161,21 +172,21 @@ export class BookingController {
         return {
           success: false,
           message: '预约不存在',
-          data: null
+          data: null,
         };
       }
 
       return {
         success: true,
         message: '获取预约详情成功',
-        data: booking
+        data: booking,
       };
     } catch (error) {
       this.ctx.status = 400;
       return {
         success: false,
         message: error.message,
-        data: null
+        data: null,
       };
     }
   }
@@ -186,18 +197,18 @@ export class BookingController {
     try {
       const activityIdNum = activityId ? parseInt(activityId) : undefined;
       const stats = await this.bookingService.getBookingStats(activityIdNum);
-      
+
       return {
         success: true,
         message: '获取预约统计成功',
-        data: stats
+        data: stats,
       };
     } catch (error) {
       this.ctx.status = 400;
       return {
         success: false,
         message: error.message,
-        data: null
+        data: null,
       };
     }
   }
