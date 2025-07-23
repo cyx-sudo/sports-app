@@ -106,7 +106,7 @@ jobs:
     
     - name: Health check
       run: |
-        curl -f http://localhost:7001/api/user/register || exit 1
+        curl -f http://localhost:7001/health
 
   # 代码质量检查
   code-quality:

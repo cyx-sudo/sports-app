@@ -6,4 +6,13 @@ export class HomeController {
   async home(): Promise<string> {
     return 'Hello Midwayjs!';
   }
+
+  @Get('/health')
+  async health() {
+    return {
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      service: 'sports-booking-system',
+    };
+  }
 }
