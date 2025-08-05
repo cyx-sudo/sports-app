@@ -1,5 +1,8 @@
 import { useState } from 'react';
-import type { User } from '../../../shared/types';
+import type { User, Activity } from '../../../shared/types';
+import ActivityList from './ActivityList';
+import ActivityDetail from './ActivityDetail';
+import BookingHistory from './BookingHistory';
 
 interface DashboardProps {
   user: User;
@@ -8,11 +11,23 @@ interface DashboardProps {
 
 export default function Dashboard({ user, onLogout }: DashboardProps) {
   const [activeTab, setActiveTab] = useState('venues');
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  const [showActivityDetail, setShowActivityDetail] = useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     onLogout();
+  };
+
+  const handleActivitySelect = (activity: Activity) => {
+    setSelectedActivity(activity);
+    setShowActivityDetail(true);
+  };
+
+  const handleBackToList = () => {
+    setShowActivityDetail(false);
+    setSelectedActivity(null);
   };
 
   return (
@@ -84,40 +99,24 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
           <div className="mt-6">
             {activeTab === 'venues' && (
               <div className="bg-white shadow rounded-lg p-6">
-                <h2 className="text-lg font-medium text-gray-900 mb-4">场馆预约</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {/* 这里后续可以添加场馆列表 */}
-                  <div className="border border-gray-200 rounded-lg p-4">
-                    <h3 className="font-medium text-gray-900">篮球场</h3>
-                    <p className="text-sm text-gray-600 mt-1">适合篮球运动</p>
-                    <button className="mt-3 w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">
-                      预约
-                    </button>
-                  </div>
-                  <div className="border border-gray-200 rounded-lg p-4">
-                    <h3 className="font-medium text-gray-900">羽毛球场</h3>
-                    <p className="text-sm text-gray-600 mt-1">适合羽毛球运动</p>
-                    <button className="mt-3 w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">
-                      预约
-                    </button>
-                  </div>
-                  <div className="border border-gray-200 rounded-lg p-4">
-                    <h3 className="font-medium text-gray-900">乒乓球场</h3>
-                    <p className="text-sm text-gray-600 mt-1">适合乒乓球运动</p>
-                    <button className="mt-3 w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">
-                      预约
-                    </button>
-                  </div>
-                </div>
+                <h2 className="text-lg font-medium text-gray-900 mb-4">
+                  {showActivityDetail ? '活动详情' : '体育活动列表'}
+                </h2>
+                {showActivityDetail && selectedActivity ? (
+                  <ActivityDetail 
+                    activityId={selectedActivity.id} 
+                    onBack={handleBackToList}
+                  />
+                ) : (
+                  <ActivityList onActivitySelect={handleActivitySelect} />
+                )}
               </div>
             )}
 
             {activeTab === 'bookings' && (
               <div className="bg-white shadow rounded-lg p-6">
                 <h2 className="text-lg font-medium text-gray-900 mb-4">我的预约</h2>
-                <div className="text-center text-gray-500 py-8">
-                  暂无预约记录
-                </div>
+                <BookingHistory />
               </div>
             )}
 

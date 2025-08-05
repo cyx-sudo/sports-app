@@ -35,6 +35,10 @@ export interface Activity {
   maxParticipants: number;
   currentParticipants: number;
   creatorId: number;
+  category?: string;
+  instructor?: string;
+  price?: number;
+  status?: string;
   createdAt?: string;
 }
 
@@ -76,7 +80,8 @@ export interface PaginatedResponse<T> {
   items: T[];
   total: number;
   page: number;
-  pageSize: number;
+  limit: number;
+  totalPages: number;
 }
 
 // 常用枚举
