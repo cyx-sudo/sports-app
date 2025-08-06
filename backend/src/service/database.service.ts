@@ -24,6 +24,9 @@ export class DatabaseService {
     // 创建预约表
     this.createBookingTable();
 
+    // 创建评论表
+    this.createCommentTable();
+
     // 插入测试数据
     this.insertTestData();
 
@@ -116,6 +119,38 @@ export class DatabaseService {
     );
     this.db.exec(
       'CREATE INDEX IF NOT EXISTS idx_booking_status ON bookings(status)'
+    );
+  }
+
+  private createCommentTable() {
+    const createTableSQL = `
+      CREATE TABLE IF NOT EXISTS comments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        userId INTEGER NOT NULL,
+        activityId INTEGER NOT NULL,
+        content TEXT NOT NULL,
+        rating INTEGER NOT NULL DEFAULT 5,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (activityId) REFERENCES activities(id) ON DELETE CASCADE
+      )
+    `;
+
+    this.db.exec(createTableSQL);
+
+    // 创建索引
+    this.db.exec(
+      'CREATE INDEX IF NOT EXISTS idx_comment_user ON comments(userId)'
+    );
+    this.db.exec(
+      'CREATE INDEX IF NOT EXISTS idx_comment_activity ON comments(activityId)'
+    );
+    this.db.exec(
+      'CREATE INDEX IF NOT EXISTS idx_comment_rating ON comments(rating)'
+    );
+    this.db.exec(
+      'CREATE INDEX IF NOT EXISTS idx_comment_created ON comments(createdAt)'
     );
   }
 

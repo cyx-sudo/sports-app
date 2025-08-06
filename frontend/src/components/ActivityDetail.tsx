@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getActivityDetail, bookActivity } from '../api/activity';
+import ActivityComments from './ActivityComments';
 import type { Activity } from '../../../shared/types';
 
 interface ActivityDetailProps {
@@ -259,6 +260,11 @@ export default function ActivityDetail({ activityId, onBack }: ActivityDetailPro
             <div>• 活动过程中请注意安全，听从指导老师安排</div>
             <div>• 如有身体不适，请立即告知工作人员</div>
           </div>
+        </div>
+
+        {/* 用户评价 */}
+        <div className="px-6 py-6 border-t">
+          <ActivityComments activityId={activityId} />
         </div>
       </div>
     </div>
