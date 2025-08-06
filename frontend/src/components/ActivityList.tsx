@@ -57,7 +57,7 @@ export default function ActivityList({ onActivitySelect }: ActivityListProps) {
   // 处理预约
   const handleBookActivity = async (activityId: number) => {
     try {
-      await bookActivity(activityId, {});
+      await bookActivity(activityId, { activityId });
       alert('预约成功！');
       // 重新加载活动列表以更新参与人数
       loadActivities(currentPage, selectedCategory, searchKeyword);

@@ -1,5 +1,5 @@
 import request from '../utils/request';
-import type { Activity, ApiResponse, PaginatedResponse } from '../../../shared/types';
+import type { Activity, ApiResponse, PaginatedResponse, CreateBookingRequest } from '../../../shared/types';
 
 // 获取活动列表
 export const getActivityList = (params?: {
@@ -23,6 +23,6 @@ export const getActivityCategories = () => {
 };
 
 // 预约活动
-export const bookActivity = (activityId: number, bookingData: any) => {
+export const bookActivity = (activityId: number, bookingData: CreateBookingRequest) => {
   return request.post(`/api/activity/${activityId}/book`, bookingData);
 };

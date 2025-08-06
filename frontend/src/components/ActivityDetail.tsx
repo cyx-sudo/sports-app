@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getActivityDetail, bookActivity } from '../api/activity';
 import type { Activity } from '../../../shared/types';
 
@@ -14,7 +14,7 @@ export default function ActivityDetail({ activityId, onBack }: ActivityDetailPro
   const [bookingLoading, setBookingLoading] = useState(false);
 
   // 加载活动详情
-  const loadActivityDetail = async () => {
+  const loadActivityDetail = useCallback(async () => {
     try {
       setLoading(true);
       const response = await getActivityDetail(activityId);
@@ -29,7 +29,7 @@ export default function ActivityDetail({ activityId, onBack }: ActivityDetailPro
     } finally {
       setLoading(false);
     }
-  };
+  }, [activityId]);
 
   // 处理预约
   const handleBookActivity = async () => {
@@ -37,7 +37,7 @@ export default function ActivityDetail({ activityId, onBack }: ActivityDetailPro
     
     try {
       setBookingLoading(true);
-      await bookActivity(activity.id, {});
+      await bookActivity(activity.id, { activityId: activity.id });
       alert('预约成功！');
       // 重新加载活动详情以更新参与人数
       loadActivityDetail();
@@ -51,7 +51,7 @@ export default function ActivityDetail({ activityId, onBack }: ActivityDetailPro
 
   useEffect(() => {
     loadActivityDetail();
-  }, [activityId]);
+  }, [loadActivityDetail]);
 
   if (loading) {
     return (
