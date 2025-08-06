@@ -87,7 +87,7 @@ export default function ActivityComments({ activityId }: ActivityCommentsProps) 
       } else {
         alert(response.data.message || '发布评论失败');
       }
-    } catch (error) {
+    } catch {
       alert('发布评论失败');
     }
   };
@@ -124,7 +124,7 @@ export default function ActivityComments({ activityId }: ActivityCommentsProps) 
       } else {
         alert(response.data.message || '更新评论失败');
       }
-    } catch (error) {
+    } catch {
       alert('更新评论失败');
     }
   };
@@ -145,7 +145,7 @@ export default function ActivityComments({ activityId }: ActivityCommentsProps) 
       } else {
         alert(response.data.message || '删除评论失败');
       }
-    } catch (error) {
+    } catch {
       alert('删除评论失败');
     }
   };
