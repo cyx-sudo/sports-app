@@ -1,6 +1,11 @@
 import { Provide, Inject } from '@midwayjs/core';
 import { DatabaseService } from './database.service';
-import type { Comment, CreateCommentRequest, UpdateCommentRequest, CommentQueryParams } from '../interface';
+import type {
+  Comment,
+  CreateCommentRequest,
+  UpdateCommentRequest,
+  CommentQueryParams,
+} from '../interface';
 
 @Provide()
 export class CommentService {
@@ -10,9 +15,12 @@ export class CommentService {
   /**
    * 创建评论
    */
-  async createComment(userId: number, commentData: CreateCommentRequest): Promise<Comment> {
+  async createComment(
+    userId: number,
+    commentData: CreateCommentRequest
+  ): Promise<Comment> {
     const db = this.databaseService.getDatabase();
-    
+
     // 验证评分范围
     if (commentData.rating < 1 || commentData.rating > 5) {
       throw new Error('评分必须在1-5之间');
@@ -29,7 +37,9 @@ export class CommentService {
 
     // 检查用户是否预约过该活动
     const booking = db
-      .prepare('SELECT id FROM bookings WHERE userId = ? AND activityId = ? AND status = ?')
+      .prepare(
+        'SELECT id FROM bookings WHERE userId = ? AND activityId = ? AND status = ?'
+      )
       .get(userId, commentData.activityId, 'confirmed');
 
     if (!booking) {
@@ -41,8 +51,13 @@ export class CommentService {
       VALUES (?, ?, ?, ?)
     `);
 
-    const result = stmt.run(userId, commentData.activityId, commentData.content, commentData.rating);
-    
+    const result = stmt.run(
+      userId,
+      commentData.activityId,
+      commentData.content,
+      commentData.rating
+    );
+
     return this.getCommentById(result.lastInsertRowid as number);
   }
 
@@ -51,8 +66,10 @@ export class CommentService {
    */
   async getCommentById(commentId: number): Promise<Comment | null> {
     const db = this.databaseService.getDatabase();
-    
-    const comment = db.prepare(`
+
+    const comment = db
+      .prepare(
+        `
       SELECT 
         c.*,
         u.username,
@@ -62,7 +79,9 @@ export class CommentService {
       LEFT JOIN users u ON c.userId = u.id
       LEFT JOIN activities a ON c.activityId = a.id
       WHERE c.id = ?
-    `).get(commentId) as any;
+    `
+      )
+      .get(commentId) as any;
 
     if (!comment) {
       return null;
@@ -79,12 +98,12 @@ export class CommentService {
       user: {
         id: comment.userId,
         username: comment.username,
-        realName: comment.realName
+        realName: comment.realName,
       },
       activity: {
         id: comment.activityId,
-        name: comment.activityName
-      }
+        name: comment.activityName,
+      },
     };
   }
 
@@ -93,14 +112,14 @@ export class CommentService {
    */
   async getComments(params: CommentQueryParams = {}) {
     const db = this.databaseService.getDatabase();
-    
+
     const {
       activityId,
       userId,
       page = 1,
       limit = 10,
       sortBy = 'createdAt',
-      sortOrder = 'desc'
+      sortOrder = 'desc',
     } = params;
 
     let whereClause = '';
@@ -125,7 +144,9 @@ export class CommentService {
       FROM comments c
       ${whereClause}
     `;
-    const { total } = db.prepare(countQuery).get(...whereParams) as { total: number };
+    const { total } = db.prepare(countQuery).get(...whereParams) as {
+      total: number;
+    };
 
     // 获取评论列表
     const query = `
@@ -142,7 +163,9 @@ export class CommentService {
       LIMIT ? OFFSET ?
     `;
 
-    const comments = db.prepare(query).all(...whereParams, limit, offset) as any[];
+    const comments = db
+      .prepare(query)
+      .all(...whereParams, limit, offset) as any[];
 
     const formattedComments: Comment[] = comments.map(comment => ({
       id: comment.id,
@@ -155,12 +178,12 @@ export class CommentService {
       user: {
         id: comment.userId,
         username: comment.username,
-        realName: comment.realName
+        realName: comment.realName,
       },
       activity: {
         id: comment.activityId,
-        name: comment.activityName
-      }
+        name: comment.activityName,
+      },
     }));
 
     return {
@@ -168,14 +191,18 @@ export class CommentService {
       total,
       page,
       limit,
-      totalPages: Math.ceil(total / limit)
+      totalPages: Math.ceil(total / limit),
     };
   }
 
   /**
    * 更新评论
    */
-  async updateComment(commentId: number, userId: number, updateData: UpdateCommentRequest): Promise<Comment> {
+  async updateComment(
+    commentId: number,
+    userId: number,
+    updateData: UpdateCommentRequest
+  ): Promise<Comment> {
     const db = this.databaseService.getDatabase();
 
     // 检查评论是否存在且属于当前用户
@@ -247,7 +274,9 @@ export class CommentService {
   async getActivityRatingStats(activityId: number) {
     const db = this.databaseService.getDatabase();
 
-    const stats = db.prepare(`
+    const stats = db
+      .prepare(
+        `
       SELECT 
         COUNT(*) as totalComments,
         AVG(rating) as averageRating,
@@ -258,18 +287,22 @@ export class CommentService {
         COUNT(CASE WHEN rating = 1 THEN 1 END) as oneStars
       FROM comments 
       WHERE activityId = ?
-    `).get(activityId) as any;
+    `
+      )
+      .get(activityId) as any;
 
     return {
       totalComments: stats.totalComments || 0,
-      averageRating: stats.averageRating ? parseFloat(stats.averageRating.toFixed(1)) : 0,
+      averageRating: stats.averageRating
+        ? parseFloat(stats.averageRating.toFixed(1))
+        : 0,
       ratingDistribution: {
         5: stats.fiveStars || 0,
         4: stats.fourStars || 0,
         3: stats.threeStars || 0,
         2: stats.twoStars || 0,
-        1: stats.oneStars || 0
-      }
+        1: stats.oneStars || 0,
+      },
     };
   }
 }

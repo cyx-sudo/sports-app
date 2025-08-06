@@ -1,7 +1,21 @@
-import { Controller, Post, Get, Put, Del, Inject, Body, Param, Query } from '@midwayjs/core';
+import {
+  Controller,
+  Post,
+  Get,
+  Put,
+  Del,
+  Inject,
+  Body,
+  Param,
+  Query,
+} from '@midwayjs/core';
 import { Context } from '@midwayjs/koa';
 import { CommentService } from '../service/comment.service';
-import type { CreateCommentRequest, UpdateCommentRequest, CommentQueryParams } from '../interface';
+import type {
+  CreateCommentRequest,
+  UpdateCommentRequest,
+  CommentQueryParams,
+} from '../interface';
 
 @Controller('/api/comment')
 export class CommentController {
@@ -22,21 +36,24 @@ export class CommentController {
       if (!userId) {
         return {
           success: false,
-          message: '请先登录'
+          message: '请先登录',
         };
       }
 
-      const comment = await this.commentService.createComment(userId, commentData);
-      
+      const comment = await this.commentService.createComment(
+        userId,
+        commentData
+      );
+
       return {
         success: true,
         data: comment,
-        message: '评论创建成功'
+        message: '评论创建成功',
       };
     } catch (error) {
       return {
         success: false,
-        message: error.message || '创建评论失败'
+        message: error.message || '创建评论失败',
       };
     }
   }
@@ -48,15 +65,15 @@ export class CommentController {
   async getComments(@Query() queryParams: CommentQueryParams) {
     try {
       const result = await this.commentService.getComments(queryParams);
-      
+
       return {
         success: true,
-        data: result
+        data: result,
       };
     } catch (error) {
       return {
         success: false,
-        message: error.message || '获取评论列表失败'
+        message: error.message || '获取评论列表失败',
       };
     }
   }
@@ -72,17 +89,17 @@ export class CommentController {
     try {
       const result = await this.commentService.getComments({
         ...queryParams,
-        activityId
+        activityId,
       });
-      
+
       return {
         success: true,
-        data: result
+        data: result,
       };
     } catch (error) {
       return {
         success: false,
-        message: error.message || '获取活动评论失败'
+        message: error.message || '获取活动评论失败',
       };
     }
   }
@@ -91,29 +108,31 @@ export class CommentController {
    * 获取用户评论
    */
   @Get('/my')
-  async getMyComments(@Query() queryParams: Omit<CommentQueryParams, 'userId'>) {
+  async getMyComments(
+    @Query() queryParams: Omit<CommentQueryParams, 'userId'>
+  ) {
     try {
       const userId = this.ctx.state.user?.id;
       if (!userId) {
         return {
           success: false,
-          message: '请先登录'
+          message: '请先登录',
         };
       }
 
       const result = await this.commentService.getComments({
         ...queryParams,
-        userId
+        userId,
       });
-      
+
       return {
         success: true,
-        data: result
+        data: result,
       };
     } catch (error) {
       return {
         success: false,
-        message: error.message || '获取我的评论失败'
+        message: error.message || '获取我的评论失败',
       };
     }
   }
@@ -125,22 +144,22 @@ export class CommentController {
   async getComment(@Param('id') commentId: number) {
     try {
       const comment = await this.commentService.getCommentById(commentId);
-      
+
       if (!comment) {
         return {
           success: false,
-          message: '评论不存在'
+          message: '评论不存在',
         };
       }
 
       return {
         success: true,
-        data: comment
+        data: comment,
       };
     } catch (error) {
       return {
         success: false,
-        message: error.message || '获取评论详情失败'
+        message: error.message || '获取评论详情失败',
       };
     }
   }
@@ -158,21 +177,25 @@ export class CommentController {
       if (!userId) {
         return {
           success: false,
-          message: '请先登录'
+          message: '请先登录',
         };
       }
 
-      const comment = await this.commentService.updateComment(commentId, userId, updateData);
-      
+      const comment = await this.commentService.updateComment(
+        commentId,
+        userId,
+        updateData
+      );
+
       return {
         success: true,
         data: comment,
-        message: '评论更新成功'
+        message: '评论更新成功',
       };
     } catch (error) {
       return {
         success: false,
-        message: error.message || '更新评论失败'
+        message: error.message || '更新评论失败',
       };
     }
   }
@@ -187,20 +210,20 @@ export class CommentController {
       if (!userId) {
         return {
           success: false,
-          message: '请先登录'
+          message: '请先登录',
         };
       }
 
       await this.commentService.deleteComment(commentId, userId);
-      
+
       return {
         success: true,
-        message: '评论删除成功'
+        message: '评论删除成功',
       };
     } catch (error) {
       return {
         success: false,
-        message: error.message || '删除评论失败'
+        message: error.message || '删除评论失败',
       };
     }
   }
@@ -211,16 +234,18 @@ export class CommentController {
   @Get('/stats/:activityId')
   async getActivityRatingStats(@Param('activityId') activityId: number) {
     try {
-      const stats = await this.commentService.getActivityRatingStats(activityId);
-      
+      const stats = await this.commentService.getActivityRatingStats(
+        activityId
+      );
+
       return {
         success: true,
-        data: stats
+        data: stats,
       };
     } catch (error) {
       return {
         success: false,
-        message: error.message || '获取评分统计失败'
+        message: error.message || '获取评分统计失败',
       };
     }
   }
