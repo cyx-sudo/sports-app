@@ -1,5 +1,5 @@
 import request from '../utils/request';
-import type { Activity, ApiResponse, PaginatedResponse, CreateBookingRequest } from '../../../shared/types';
+import type { Activity, ApiResponse, Booking, PaginatedResponse, CreateBookingRequest, CreateActivityRequest, UpdateActivityRequest } from '../../../shared/types';
 
 // 获取活动列表
 export const getActivityList = (params?: {
@@ -30,33 +30,12 @@ export const bookActivity = (activityId: number, bookingData: CreateBookingReque
 // === 管理员活动管理API ===
 
 // 创建活动
-export const createActivity = (activityData: {
-  name: string;
-  description: string;
-  location: string;
-  capacity: number;
-  startTime: string;
-  endTime: string;
-  price?: number;
-  instructor?: string;
-  category: string;
-}) => {
+export const createActivity = (activityData: CreateActivityRequest) => {
   return request.post<ApiResponse<Activity>>('/api/activity', activityData);
 };
 
 // 更新活动
-export const updateActivity = (id: number, activityData: Partial<{
-  name: string;
-  description: string;
-  location: string;
-  capacity: number;
-  startTime: string;
-  endTime: string;
-  price?: number;
-  instructor?: string;
-  category: string;
-  status: string;
-}>) => {
+export const updateActivity = (id: number, activityData: UpdateActivityRequest) => {
   return request.put<ApiResponse<Activity>>(`/api/activity/${id}`, activityData);
 };
 
@@ -65,11 +44,11 @@ export const deleteActivity = (id: number) => {
   return request.delete<ApiResponse<null>>(`/api/activity/${id}`);
 };
 
-// 获取活动预约列表
+// 获取活动预约列表  
 export const getActivityBookings = (id: number, params?: {
   page?: number;
   limit?: number;
   status?: string;
 }) => {
-  return request.get<ApiResponse<PaginatedResponse<any>>>(`/api/activity/${id}/bookings`, { params });
+  return request.get<ApiResponse<PaginatedResponse<Booking>>>(`/api/activity/${id}/bookings`, { params });
 };

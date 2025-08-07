@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   getActivityList,
   createActivity,
@@ -7,7 +7,7 @@ import {
   getActivityCategories,
   getActivityBookings
 } from '../api/activity';
-import type { Activity } from '../../../shared/types';
+import type { Activity, Booking } from '../../../shared/types';
 
 interface ActivityFormData {
   name: string;
@@ -55,13 +55,13 @@ export default function AdminActivityManagement() {
   // 详情模态框状态
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
-  const [activityBookings, setActivityBookings] = useState<any[]>([]);
+  const [activityBookings, setActivityBookings] = useState<Booking[]>([]);
 
   // 加载活动列表
-  const loadActivities = async (page = 1) => {
+  const loadActivities = useCallback(async (page = 1) => {
     try {
       setLoading(true);
-      const params: any = { page, limit: 10 };
+      const params: Record<string, string | number> = { page, limit: 10 };
       
       if (searchKeyword) params.search = searchKeyword;
       if (selectedCategory) params.category = selectedCategory;
@@ -70,7 +70,7 @@ export default function AdminActivityManagement() {
       const response = await getActivityList(params);
       
       if (response.data.success && response.data.data) {
-        setActivities((response.data.data as any).activities || (response.data.data as any).items || []);
+        setActivities(response.data.data.items || []);
         setTotalPages(response.data.data.totalPages || 1);
         setCurrentPage(page);
       } else {
@@ -81,7 +81,7 @@ export default function AdminActivityManagement() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchKeyword, selectedCategory, selectedStatus]);
 
   // 加载分类列表
   const loadCategories = async () => {
@@ -144,10 +144,10 @@ export default function AdminActivityManagement() {
   const handleEditActivity = (activity: Activity) => {
     setEditingActivity(activity);
     setFormData({
-      name: (activity as any).name || activity.title || '',
+      name: activity.name || activity.title || '',
       description: activity.description || '',
       location: activity.location || '',
-      capacity: (activity as any).capacity || activity.maxParticipants || 0,
+      capacity: activity.capacity || activity.maxParticipants || 0,
       startTime: activity.startTime ? activity.startTime.slice(0, 16) : '',
       endTime: activity.endTime ? activity.endTime.slice(0, 16) : '',
       price: activity.price || 0,
@@ -192,7 +192,7 @@ export default function AdminActivityManagement() {
 
   // 处理删除活动
   const handleDeleteActivity = async (activity: Activity) => {
-    if (!confirm(`确定要删除活动"${(activity as any).name || activity.title}"吗？`)) {
+    if (!confirm(`确定要删除活动"${activity.name || activity.title}"吗？`)) {
       return;
     }
 
@@ -218,7 +218,7 @@ export default function AdminActivityManagement() {
     try {
       const response = await getActivityBookings(activity.id, { page: 1, limit: 50 });
       if (response.data.success) {
-        setActivityBookings((response.data.data as any)?.bookings || []);
+        setActivityBookings(response.data.data?.items || []);
       }
     } catch (err) {
       console.error('加载预约信息失败:', err);
@@ -277,7 +277,7 @@ export default function AdminActivityManagement() {
   useEffect(() => {
     loadActivities();
     loadCategories();
-  }, []);
+  }, [loadActivities]);
 
   return (
     <div className="max-w-7xl mx-auto p-6">
@@ -384,7 +384,7 @@ export default function AdminActivityManagement() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div>
                             <div className="font-medium text-gray-900">
-                              {(activity as any).name || activity.title}
+                              {activity.name || activity.title}
                             </div>
                             <div className="text-sm text-gray-500">
                               {activity.category} · {activity.instructor}
@@ -401,7 +401,7 @@ export default function AdminActivityManagement() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
-                            {activity.currentParticipants || 0}/{(activity as any).capacity || activity.maxParticipants}人
+                            {activity.currentParticipants || 0}/{activity.capacity || activity.maxParticipants}人
                           </div>
                           <div className="text-sm text-gray-500">
                             ¥{activity.price || 0}
@@ -648,7 +648,7 @@ export default function AdminActivityManagement() {
           <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
             <div className="mt-3">
               <h3 className="text-lg font-medium text-gray-900 mb-4">
-                编辑活动 - {(editingActivity as any).name || editingActivity.title}
+                编辑活动 - {editingActivity.name || editingActivity.title}
               </h3>
               <form onSubmit={handleUpdateActivity} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -813,7 +813,7 @@ export default function AdminActivityManagement() {
             <div className="mt-3">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-medium text-gray-900">
-                  活动详情 - {(selectedActivity as any).name || selectedActivity.title}
+                  活动详情 - {selectedActivity.name || selectedActivity.title}
                 </h3>
                 <button
                   onClick={() => setShowDetailModal(false)}
@@ -834,7 +834,7 @@ export default function AdminActivityManagement() {
                     <div><span className="font-medium">地点：</span>{selectedActivity.location}</div>
                     <div><span className="font-medium">指导老师：</span>{selectedActivity.instructor || '未指定'}</div>
                     <div><span className="font-medium">价格：</span>¥{selectedActivity.price || 0}</div>
-                    <div><span className="font-medium">容量：</span>{selectedActivity.currentParticipants || 0}/{(selectedActivity as any).capacity || selectedActivity.maxParticipants}人</div>
+                    <div><span className="font-medium">容量：</span>{selectedActivity.currentParticipants || 0}/{selectedActivity.capacity || selectedActivity.maxParticipants}人</div>
                     <div><span className="font-medium">开始时间：</span>{formatDateTime(selectedActivity.startTime)}</div>
                     <div><span className="font-medium">结束时间：</span>{formatDateTime(selectedActivity.endTime)}</div>
                     <div><span className="font-medium">状态：</span>
@@ -873,12 +873,10 @@ export default function AdminActivityManagement() {
                                 {formatDateTime(booking.createdAt)}
                               </div>
                               <div className={`text-xs px-2 py-1 rounded ${
-                                booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                                booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                booking.status === 'active' ? 'bg-green-100 text-green-800' :
                                 'bg-red-100 text-red-800'
                               }`}>
-                                {booking.status === 'confirmed' ? '已确认' :
-                                 booking.status === 'pending' ? '待确认' : '已取消'}
+                                {booking.status === 'active' ? '已预约' : '已取消'}
                               </div>
                             </div>
                           </div>
