@@ -90,7 +90,7 @@ export default function ActivityDetail({ activityId, onBack }: ActivityDetailPro
     );
   }
 
-  const isFullyBooked = activity.currentParticipants >= activity.maxParticipants;
+  const isFullyBooked = activity.currentParticipants >= (activity.capacity || activity.maxParticipants || 0);
   const startTime = new Date(activity.startTime);
   const endTime = new Date(activity.endTime);
 
@@ -171,7 +171,7 @@ export default function ActivityDetail({ activityId, onBack }: ActivityDetailPro
                         <div
                           className="bg-indigo-600 h-2 rounded-full"
                           style={{
-                            width: `${(activity.currentParticipants / activity.maxParticipants) * 100}%`
+                            width: `${(activity.currentParticipants / (activity.capacity || activity.maxParticipants || 1)) * 100}%`
                           }}
                         ></div>
                       </div>

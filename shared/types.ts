@@ -4,6 +4,8 @@ export interface User {
   username: string;
   email: string;
   phone: string;
+  role?: UserRole;
+  realName?: string;
   createdAt?: string;
 }
 
@@ -27,31 +29,39 @@ export interface AuthResponse {
 // 活动相关类型
 export interface Activity {
   id: number;
-  title: string;
+  name: string;        // 使用name而不是title
+  title?: string;      // 兼容旧字段
   description: string;
   location: string;
   startTime: string;
   endTime: string;
-  maxParticipants: number;
+  capacity: number;           // 使用capacity而不是maxParticipants
+  maxParticipants?: number;   // 兼容旧字段
   currentParticipants: number;
-  creatorId: number;
+  creatorId?: number;
   category?: string;
   instructor?: string;
   price?: number;
   status?: string;
   createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface CreateActivityRequest {
-  title: string;
+  name: string;        // 使用name而不是title
   description: string;
   location: string;
   startTime: string;
   endTime: string;
-  maxParticipants: number;
+  capacity: number;    // 使用capacity而不是maxParticipants
+  price?: number;
+  instructor?: string;
+  category: string;
 }
 
-export interface UpdateActivityRequest extends Partial<CreateActivityRequest> {}
+export interface UpdateActivityRequest extends Partial<CreateActivityRequest> {
+  status?: string;
+}
 
 // 预订相关类型
 export interface Booking {

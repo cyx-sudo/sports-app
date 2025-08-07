@@ -188,14 +188,14 @@ export default function ActivityList({ onActivitySelect }: ActivityListProps) {
                 </button>
                 <button
                   onClick={() => handleBookActivity(activity.id)}
-                  disabled={activity.currentParticipants >= activity.maxParticipants}
+                  disabled={activity.currentParticipants >= (activity.capacity || activity.maxParticipants || 0)}
                   className={`flex-1 px-3 py-2 text-sm rounded ${
-                    activity.currentParticipants >= activity.maxParticipants
+                    activity.currentParticipants >= (activity.capacity || activity.maxParticipants || 0)
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                       : 'bg-indigo-600 text-white hover:bg-indigo-700'
                   }`}
                 >
-                  {activity.currentParticipants >= activity.maxParticipants ? '已满' : '立即预约'}
+                  {activity.currentParticipants >= (activity.capacity || activity.maxParticipants || 0) ? '已满' : '立即预约'}
                 </button>
               </div>
             </div>
