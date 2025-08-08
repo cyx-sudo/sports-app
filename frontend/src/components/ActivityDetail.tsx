@@ -21,7 +21,7 @@ export default function ActivityDetail() {
       
       if (response.data.success && response.data.data) {
         // 后端返回的数据结构是 { activity: {...}, bookingStats: {...} }
-        const activityData = response.data.data as any;
+        const activityData = response.data.data as { activity?: Activity } & Activity;
         setActivity(activityData.activity || activityData);
       } else {
         setError(response.data.message || '加载活动详情失败');

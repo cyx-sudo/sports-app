@@ -131,9 +131,12 @@ export class UserController {
 
       const token = authHeader.substring(7);
       const user = await this.userService.getUserByToken(token);
-      
+
       // 更新用户信息
-      const updatedUser = await this.userService.updateUserProfile(user.id, profileData);
+      const updatedUser = await this.userService.updateUserProfile(
+        user.id,
+        profileData
+      );
 
       return {
         success: true,
@@ -152,7 +155,9 @@ export class UserController {
 
   // 修改密码
   @Put('/password')
-  async changePassword(@Body() passwordData: { currentPassword: string; newPassword: string }) {
+  async changePassword(
+    @Body() passwordData: { currentPassword: string; newPassword: string }
+  ) {
     try {
       // 手动验证 token
       const authHeader = this.ctx.headers.authorization;
@@ -167,9 +172,13 @@ export class UserController {
 
       const token = authHeader.substring(7);
       const user = await this.userService.getUserByToken(token);
-      
+
       // 修改密码
-      await this.userService.changePassword(user.id, passwordData.currentPassword, passwordData.newPassword);
+      await this.userService.changePassword(
+        user.id,
+        passwordData.currentPassword,
+        passwordData.newPassword
+      );
 
       return {
         success: true,

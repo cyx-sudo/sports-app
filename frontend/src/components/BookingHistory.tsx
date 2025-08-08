@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getMyBookings, cancelBooking } from '../api/booking';
 import type { Booking } from '../../../shared/types';
 
@@ -11,7 +11,7 @@ export default function BookingHistory() {
   const [totalPages, setTotalPages] = useState(1);
 
   // 获取预约列表
-  const fetchBookings = async () => {
+  const fetchBookings = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
@@ -25,7 +25,12 @@ export default function BookingHistory() {
       const response = await getMyBookings(params);
       
       if (response.data.success) {
-        const data = response.data.data as any;
+        const data = response.data.data as { 
+          bookings?: Booking[]; 
+          items?: Booking[]; 
+          totalPages?: number; 
+          total?: number; 
+        };
         if (data) {
           // 后端返回 bookings 数组而不是 items
           setBookings(data.bookings || data.items || []);
@@ -40,7 +45,7 @@ export default function BookingHistory() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, statusFilter]);
 
   // 取消预约
   const handleCancelBooking = async (bookingId: number) => {
@@ -74,7 +79,7 @@ export default function BookingHistory() {
   // 初始加载和状态/页面变化时重新获取数据
   useEffect(() => {
     fetchBookings();
-  }, [statusFilter, currentPage]);
+  }, [fetchBookings]);
 
   if (loading && bookings.length === 0) {
     return (
@@ -168,7 +173,7 @@ export default function BookingHistory() {
                     </div>
                     <div className="flex items-center">
                       <span className="w-4 h-4 mr-2">📅</span>
-                      预约时间：{new Date((booking as any).bookingTime || booking.createdAt).toLocaleString()}
+                      预约时间：{new Date((booking as Booking & { bookingTime?: string }).bookingTime || booking.createdAt).toLocaleString()}
                     </div>
                   </div>
                 </div>

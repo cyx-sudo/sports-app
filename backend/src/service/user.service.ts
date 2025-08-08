@@ -154,7 +154,10 @@ export class UserService {
   }
 
   // 更新用户资料
-  async updateUserProfile(userId: number, profileData: { email?: string; phone?: string; realName?: string }): Promise<Omit<User, 'password'>> {
+  async updateUserProfile(
+    userId: number,
+    profileData: { email?: string; phone?: string; realName?: string }
+  ): Promise<Omit<User, 'password'>> {
     const db = this.databaseService.getDatabase();
 
     // 检查邮箱是否已被其他用户使用
@@ -199,21 +202,30 @@ export class UserService {
     updateValues.push(userId);
 
     // 执行更新
-    if (updateFields.length > 1) { // 除了 updatedAt 还有其他字段
-      const updateSql = `UPDATE users SET ${updateFields.join(', ')} WHERE id = ?`;
+    if (updateFields.length > 1) {
+      // 除了 updatedAt 还有其他字段
+      const updateSql = `UPDATE users SET ${updateFields.join(
+        ', '
+      )} WHERE id = ?`;
       db.prepare(updateSql).run(...updateValues);
     }
 
     // 返回更新后的用户信息
     const user = db
-      .prepare('SELECT id, username, email, phone, realName, createdAt, updatedAt FROM users WHERE id = ?')
+      .prepare(
+        'SELECT id, username, email, phone, realName, createdAt, updatedAt FROM users WHERE id = ?'
+      )
       .get(userId) as Omit<User, 'password'>;
 
     return user;
   }
 
   // 修改密码
-  async changePassword(userId: number, currentPassword: string, newPassword: string): Promise<void> {
+  async changePassword(
+    userId: number,
+    currentPassword: string,
+    newPassword: string
+  ): Promise<void> {
     const db = this.databaseService.getDatabase();
 
     // 获取用户当前密码
@@ -226,7 +238,10 @@ export class UserService {
     }
 
     // 验证当前密码
-    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    const isCurrentPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.password
+    );
     if (!isCurrentPasswordValid) {
       throw new Error('当前密码错误');
     }
@@ -235,7 +250,10 @@ export class UserService {
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
 
     // 更新密码
-    db.prepare('UPDATE users SET password = ?, updatedAt = ? WHERE id = ?')
-      .run(hashedNewPassword, new Date().toISOString(), userId);
+    db.prepare('UPDATE users SET password = ?, updatedAt = ? WHERE id = ?').run(
+      hashedNewPassword,
+      new Date().toISOString(),
+      userId
+    );
   }
 }

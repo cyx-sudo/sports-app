@@ -50,7 +50,11 @@ export default function Register({ onRegisterSuccess, onSwitchToLogin }: Registe
       await register(registerData);
       setSuccess(true);
       setTimeout(() => {
-        onRegisterSuccess ? onRegisterSuccess() : navigate('/login');
+        if (onRegisterSuccess) {
+          onRegisterSuccess();
+        } else {
+          navigate('/login');
+        }
       }, 2000);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : '注册失败，请重试';
