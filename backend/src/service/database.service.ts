@@ -41,7 +41,8 @@ export class DatabaseService {
         password TEXT NOT NULL,
         email TEXT UNIQUE NOT NULL,
         phone TEXT UNIQUE NOT NULL,
-        realName TEXT NOT NULL,
+        realName TEXT,
+        role TEXT DEFAULT 'user',
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
       )

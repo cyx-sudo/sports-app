@@ -32,7 +32,7 @@ request.interceptors.response.use(
     if (data.success === false) {
       return Promise.reject(new Error(data.message || '请求失败'));
     }
-    return data;
+    return response; // 返回完整的 response 对象
   },
   (error) => {
     if (error.response?.status === 401) {

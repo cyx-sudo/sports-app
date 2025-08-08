@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Test</title>
+</head>
+<body>
+    <h1>登录测试</h1>
+    <form id="loginForm">
+        <input type="text" id="username" placeholder="用户名" value="test999">
+        <input type="password" id="password" placeholder="密码" value="123456">
+        <button type="submit">登录</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            console.log('尝试登录:', { username, password });
+            
+            try {
+                const response = await fetch('http://localhost:7001/api/user/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                console.log('响应状态:', response.status);
+                
+                const data = await response.json();
+                console.log('响应数据:', data);
+                
+                document.getElementById('result').innerHTML = 
+                    '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                console.error('请求错误:', error);
+                document.getElementById('result').innerHTML = 
+                    '<pre>错误: ' + error.message + '</pre>';
+            }
+        });
+    </script>
+</body>
+</html>

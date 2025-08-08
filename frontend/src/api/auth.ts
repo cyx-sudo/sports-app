@@ -20,3 +20,20 @@ export const getUserInfo = () => {
 export const logout = () => {
   return request.post('/api/user/logout');
 };
+
+// 更新用户资料
+export const updateProfile = (profileData: {
+  email?: string;
+  phone?: string;
+  realName?: string;
+}) => {
+  return request.put('/api/user/profile', profileData);
+};
+
+// 修改密码
+export const changePassword = (passwordData: {
+  currentPassword: string;
+  newPassword: string;
+}) => {
+  return request.put('/api/user/password', passwordData);
+};

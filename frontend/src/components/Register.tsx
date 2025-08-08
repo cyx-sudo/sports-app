@@ -1,12 +1,14 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { register } from '../api/auth';
 
 interface RegisterProps {
-  onRegisterSuccess: () => void;
-  onSwitchToLogin: () => void;
+  onRegisterSuccess?: () => void; // 保持兼容性，但会优先使用路由
+  onSwitchToLogin?: () => void; // 保持兼容性，但会优先使用路由
 }
 
 export default function Register({ onRegisterSuccess, onSwitchToLogin }: RegisterProps) {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -16,6 +18,7 @@ export default function Register({ onRegisterSuccess, onSwitchToLogin }: Registe
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -45,8 +48,10 @@ export default function Register({ onRegisterSuccess, onSwitchToLogin }: Registe
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { confirmPassword, ...registerData } = formData;
       await register(registerData);
-      alert('注册成功！请登录');
-      onRegisterSuccess();
+      setSuccess(true);
+      setTimeout(() => {
+        onRegisterSuccess ? onRegisterSuccess() : navigate('/login');
+      }, 2000);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : '注册失败，请重试';
       setError(errorMessage);
@@ -55,23 +60,42 @@ export default function Register({ onRegisterSuccess, onSwitchToLogin }: Registe
     }
   };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            注册新账户
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            加入体育活动室预约系统
-          </p>
+  if (success) {
+    return (
+      <div className="animate-fadeIn text-center">
+        <div className="mb-6">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">注册成功！</h2>
+          <p className="text-gray-600">正在跳转到登录页面...</p>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                用户名
-              </label>
+        <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="animate-fadeIn">
+      <div className="text-center mb-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">创建新账户</h2>
+        <p className="text-gray-600">加入体育活动室预约系统</p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid grid-cols-1 gap-4">
+          <div>
+            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+              用户名
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
               <input
                 id="username"
                 name="username"
@@ -79,15 +103,22 @@ export default function Register({ onRegisterSuccess, onSwitchToLogin }: Registe
                 required
                 value={formData.username}
                 onChange={handleChange}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="input-field pl-12"
                 placeholder="请输入用户名"
               />
             </div>
+          </div>
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                邮箱
-              </label>
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              邮箱地址
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                </svg>
+              </div>
               <input
                 id="email"
                 name="email"
@@ -95,15 +126,22 @@ export default function Register({ onRegisterSuccess, onSwitchToLogin }: Registe
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="请输入邮箱"
+                className="input-field pl-12"
+                placeholder="请输入邮箱地址"
               />
             </div>
+          </div>
 
-            <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                手机号
-              </label>
+          <div>
+            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+              手机号码
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+              </div>
               <input
                 id="phone"
                 name="phone"
@@ -111,15 +149,22 @@ export default function Register({ onRegisterSuccess, onSwitchToLogin }: Registe
                 required
                 value={formData.phone}
                 onChange={handleChange}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="请输入手机号"
+                className="input-field pl-12"
+                placeholder="请输入手机号码"
               />
             </div>
+          </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                密码
-              </label>
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              设置密码
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
               <input
                 id="password"
                 name="password"
@@ -127,15 +172,22 @@ export default function Register({ onRegisterSuccess, onSwitchToLogin }: Registe
                 required
                 value={formData.password}
                 onChange={handleChange}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="input-field pl-12"
                 placeholder="请输入密码（至少6位）"
               />
             </div>
+          </div>
 
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                确认密码
-              </label>
+          <div>
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+              确认密码
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
               <input
                 id="confirmPassword"
                 name="confirmPassword"
@@ -143,37 +195,49 @@ export default function Register({ onRegisterSuccess, onSwitchToLogin }: Registe
                 required
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="input-field pl-12"
                 placeholder="请再次输入密码"
               />
             </div>
           </div>
+        </div>
 
-          {error && (
-            <div className="text-red-600 text-sm text-center">{error}</div>
-          )}
-
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400"
-            >
-              {loading ? '注册中...' : '注册'}
-            </button>
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center animate-slideIn">
+            <svg className="h-5 w-5 text-red-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="text-red-800 text-sm">{error}</span>
           </div>
+        )}
 
-          <div className="text-center">
-            <button
-              type="button"
-              onClick={onSwitchToLogin}
-              className="text-indigo-600 hover:text-indigo-500"
-            >
-              已有账户？点击登录
-            </button>
-          </div>
-        </form>
-      </div>
+        <div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn-primary w-full relative overflow-hidden"
+          >
+            {loading && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            )}
+            <span className={loading ? 'opacity-0' : 'opacity-100'}>
+              创建账户
+            </span>
+          </button>
+        </div>
+
+        <div className="text-center">
+          <button
+            type="button"
+            onClick={() => onSwitchToLogin ? onSwitchToLogin() : navigate('/login')}
+            className="text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200"
+          >
+            ← 已有账户？返回登录
+          </button>
+        </div>
+      </form>
     </div>
   );
 }

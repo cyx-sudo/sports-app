@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getActivityList, getActivityCategories, bookActivity } from '../api/activity';
 import type { Activity } from '../../../shared/types';
 
-interface ActivityListProps {
-  onActivitySelect?: (activity: Activity) => void;
-}
-
-export default function ActivityList({ onActivitySelect }: ActivityListProps) {
+export default function ActivityList() {
+  const navigate = useNavigate();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,6 +30,7 @@ export default function ActivityList({ onActivitySelect }: ActivityListProps) {
         setActivities(response.data.data.items);
         setTotalPages(response.data.data.totalPages);
         setCurrentPage(page);
+        setError(''); // 清除错误信息
       } else {
         setError(response.data.message || '加载活动列表失败');
       }
@@ -153,7 +152,7 @@ export default function ActivityList({ onActivitySelect }: ActivityListProps) {
             <div className="p-6">
               <div className="flex justify-between items-start mb-2">
                 <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">
-                  {activity.title}
+                  {activity.name || activity.title}
                 </h3>
                 <span className="text-sm bg-indigo-100 text-indigo-800 px-2 py-1 rounded">
                   {activity.category}
@@ -175,13 +174,13 @@ export default function ActivityList({ onActivitySelect }: ActivityListProps) {
                 </div>
                 <div className="flex items-center">
                   <span className="w-4 h-4 mr-2">👥</span>
-                  {activity.currentParticipants}/{activity.maxParticipants} 人
+                  {activity.currentParticipants}/{activity.capacity || activity.maxParticipants} 人
                 </div>
               </div>
 
               <div className="mt-4 flex gap-2">
                 <button
-                  onClick={() => onActivitySelect?.(activity)}
+                  onClick={() => navigate(`/dashboard/activities/${activity.id}`)}
                   className="flex-1 px-3 py-2 text-sm border border-gray-300 text-gray-700 rounded hover:bg-gray-50"
                 >
                   查看详情

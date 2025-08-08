@@ -49,7 +49,7 @@ export interface ActivityListRequest {
 }
 
 export interface ActivityListResponse {
-  activities: Activity[];
+  items: Activity[];
   total: number;
   page: number;
   limit: number;

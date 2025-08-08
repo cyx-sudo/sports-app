@@ -6,76 +6,88 @@ export default function BookingHistory() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [statusFilter, setStatusFilter] = useState('');
 
-  // 加载预约列表
-  const loadBookings = async (page = 1, status = '') => {
+  // 获取预约列表
+  const fetchBookings = async () => {
     try {
       setLoading(true);
-      const response = await getMyBookings({
-        page,
-        limit: 10,
-        status: status || undefined
-      });
+      setError('');
       
-      if (response.data.success && response.data.data) {
-        setBookings(response.data.data.items);
-        setTotalPages(response.data.data.totalPages);
-        setCurrentPage(page);
+      const params = {
+        page: currentPage,
+        limit: 10,
+        ...(statusFilter && { status: statusFilter })
+      };
+
+      const response = await getMyBookings(params);
+      
+      if (response.data.success) {
+        const data = response.data.data as any;
+        if (data) {
+          // 后端返回 bookings 数组而不是 items
+          setBookings(data.bookings || data.items || []);
+          setTotalPages(data.totalPages || Math.ceil((data.total || 0) / 10));
+        }
       } else {
-        setError(response.data.message || '加载预约列表失败');
+        setError(response.data.message || '获取预约列表失败');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '网络错误');
+      console.error('获取预约列表错误:', err);
+      setError('网络错误，请稍后重试');
     } finally {
       setLoading(false);
     }
   };
 
-  // 处理取消预约
+  // 取消预约
   const handleCancelBooking = async (bookingId: number) => {
-    if (!confirm('确定要取消这个预约吗？')) {
-      return;
-    }
+    if (!confirm('确定要取消这个预约吗？')) return;
 
     try {
-      await cancelBooking(bookingId);
-      alert('预约已取消');
-      // 重新加载列表
-      loadBookings(currentPage, statusFilter);
+      const response = await cancelBooking(bookingId);
+      if (response.data.success) {
+        // 重新获取列表
+        fetchBookings();
+      } else {
+        setError(response.data.message || '取消预约失败');
+      }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '取消预约失败';
-      alert(errorMessage);
+      console.error('取消预约错误:', err);
+      setError('取消预约失败，请稍后重试');
     }
   };
 
-  // 处理状态筛选
+  // 状态筛选
   const handleStatusChange = (status: string) => {
     setStatusFilter(status);
-    loadBookings(1, status);
+    setCurrentPage(1); // 重置到第一页
   };
 
-  // 处理分页
+  // 页面切换
   const handlePageChange = (page: number) => {
-    loadBookings(page, statusFilter);
+    setCurrentPage(page);
   };
 
+  // 初始加载和状态/页面变化时重新获取数据
   useEffect(() => {
-    loadBookings();
-  }, []);
+    fetchBookings();
+  }, [statusFilter, currentPage]);
 
   if (loading && bookings.length === 0) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="text-lg text-gray-600">加载中...</div>
+      <div className="flex justify-center items-center py-12">
+        <div className="text-gray-500">加载中...</div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
+      <h3 className="text-lg font-semibold">我的预约</h3>
+
       {/* 筛选器 */}
       <div className="bg-white p-4 rounded-lg shadow">
         <div className="flex items-center space-x-4">
@@ -131,14 +143,14 @@ export default function BookingHistory() {
                 <div className="flex-1">
                   <div className="flex items-center mb-2">
                     <h3 className="text-lg font-semibold text-gray-900">
-                      {booking.activity?.title || '活动名称'}
+                      {booking.activity?.title || booking.activity?.name || '活动名称'}
                     </h3>
                     <span className={`ml-3 px-2 py-1 text-xs rounded-full ${
-                      booking.status === 'active'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
+                      (booking.status as string) === 'cancelled'
+                        ? 'bg-red-100 text-red-800'
+                        : 'bg-green-100 text-green-800'
                     }`}>
-                      {booking.status === 'active' ? '有效' : '已取消'}
+                      {(booking.status as string) === 'cancelled' ? '已取消' : '有效'}
                     </span>
                   </div>
                   
@@ -156,13 +168,13 @@ export default function BookingHistory() {
                     </div>
                     <div className="flex items-center">
                       <span className="w-4 h-4 mr-2">📅</span>
-                      预约时间：{new Date(booking.createdAt).toLocaleString()}
+                      预约时间：{new Date((booking as any).bookingTime || booking.createdAt).toLocaleString()}
                     </div>
                   </div>
                 </div>
 
                 <div className="mt-4 md:mt-0 md:ml-6">
-                  {booking.status === 'active' && (
+                  {(booking.status as string) !== 'cancelled' && (
                     <button
                       onClick={() => handleCancelBooking(booking.id)}
                       className="px-4 py-2 text-sm border border-red-300 text-red-700 rounded hover:bg-red-50"

@@ -63,6 +63,17 @@ export interface UpdateActivityRequest extends Partial<CreateActivityRequest> {
   status?: string;
 }
 
+// 活动详情响应接口
+export interface ActivityDetailResponse {
+  activity: Activity;
+  bookingStats: {
+    total: number;
+    pending: number;
+    confirmed: number;
+    cancelled: number;
+  };
+}
+
 // 预订相关类型
 export interface Booking {
   id: number;

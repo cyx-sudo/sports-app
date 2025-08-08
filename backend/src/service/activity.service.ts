@@ -87,7 +87,7 @@ export class ActivityService {
       .all(...queryParams, limit, offset) as Activity[];
 
     return {
-      activities,
+      items: activities,
       total: countResult.total,
       page,
       limit,

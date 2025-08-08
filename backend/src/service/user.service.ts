@@ -152,4 +152,90 @@ export class UserService {
       .get(options.uid) as Omit<User, 'password'>;
     return user || null;
   }
+
+  // 更新用户资料
+  async updateUserProfile(userId: number, profileData: { email?: string; phone?: string; realName?: string }): Promise<Omit<User, 'password'>> {
+    const db = this.databaseService.getDatabase();
+
+    // 检查邮箱是否已被其他用户使用
+    if (profileData.email) {
+      const existingEmail = db
+        .prepare('SELECT id FROM users WHERE email = ? AND id != ?')
+        .get(profileData.email, userId);
+      if (existingEmail) {
+        throw new Error('邮箱已被其他用户使用');
+      }
+    }
+
+    // 检查手机号是否已被其他用户使用
+    if (profileData.phone) {
+      const existingPhone = db
+        .prepare('SELECT id FROM users WHERE phone = ? AND id != ?')
+        .get(profileData.phone, userId);
+      if (existingPhone) {
+        throw new Error('手机号已被其他用户使用');
+      }
+    }
+
+    // 构建更新字段
+    const updateFields = [];
+    const updateValues = [];
+
+    if (profileData.email !== undefined) {
+      updateFields.push('email = ?');
+      updateValues.push(profileData.email);
+    }
+    if (profileData.phone !== undefined) {
+      updateFields.push('phone = ?');
+      updateValues.push(profileData.phone);
+    }
+    if (profileData.realName !== undefined) {
+      updateFields.push('realName = ?');
+      updateValues.push(profileData.realName);
+    }
+
+    updateFields.push('updatedAt = ?');
+    updateValues.push(new Date().toISOString());
+    updateValues.push(userId);
+
+    // 执行更新
+    if (updateFields.length > 1) { // 除了 updatedAt 还有其他字段
+      const updateSql = `UPDATE users SET ${updateFields.join(', ')} WHERE id = ?`;
+      db.prepare(updateSql).run(...updateValues);
+    }
+
+    // 返回更新后的用户信息
+    const user = db
+      .prepare('SELECT id, username, email, phone, realName, createdAt, updatedAt FROM users WHERE id = ?')
+      .get(userId) as Omit<User, 'password'>;
+
+    return user;
+  }
+
+  // 修改密码
+  async changePassword(userId: number, currentPassword: string, newPassword: string): Promise<void> {
+    const db = this.databaseService.getDatabase();
+
+    // 获取用户当前密码
+    const user = db
+      .prepare('SELECT password FROM users WHERE id = ?')
+      .get(userId) as { password: string } | undefined;
+
+    if (!user) {
+      throw new Error('用户不存在');
+    }
+
+    // 验证当前密码
+    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isCurrentPasswordValid) {
+      throw new Error('当前密码错误');
+    }
+
+    // 加密新密码
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    // 更新密码
+    db.prepare('UPDATE users SET password = ?, updatedAt = ? WHERE id = ?')
+      .run(hashedNewPassword, new Date().toISOString(), userId);
+  }
 }

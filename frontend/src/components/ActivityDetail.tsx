@@ -1,14 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { getActivityDetail, bookActivity } from '../api/activity';
 import ActivityComments from './ActivityComments';
 import type { Activity } from '../../../shared/types';
 
-interface ActivityDetailProps {
-  activityId: number;
-  onBack: () => void;
-}
-
-export default function ActivityDetail({ activityId, onBack }: ActivityDetailProps) {
+export default function ActivityDetail() {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const activityId = parseInt(id || '0', 10);
   const [activity, setActivity] = useState<Activity | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -21,7 +20,9 @@ export default function ActivityDetail({ activityId, onBack }: ActivityDetailPro
       const response = await getActivityDetail(activityId);
       
       if (response.data.success && response.data.data) {
-        setActivity(response.data.data);
+        // 后端返回的数据结构是 { activity: {...}, bookingStats: {...} }
+        const activityData = response.data.data as any;
+        setActivity(activityData.activity || activityData);
       } else {
         setError(response.data.message || '加载活动详情失败');
       }
@@ -67,7 +68,7 @@ export default function ActivityDetail({ activityId, onBack }: ActivityDetailPro
       <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
         {error}
         <button 
-          onClick={onBack}
+          onClick={() => navigate('/dashboard/activities')}
           className="ml-4 text-indigo-600 hover:text-indigo-500"
         >
           返回列表
@@ -81,7 +82,7 @@ export default function ActivityDetail({ activityId, onBack }: ActivityDetailPro
       <div className="text-center py-12">
         <div className="text-gray-400 text-lg">活动不存在</div>
         <button 
-          onClick={onBack}
+          onClick={() => navigate('/dashboard/activities')}
           className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
         >
           返回列表
@@ -99,7 +100,7 @@ export default function ActivityDetail({ activityId, onBack }: ActivityDetailPro
       {/* 头部导航 */}
       <div className="mb-6">
         <button
-          onClick={onBack}
+          onClick={() => navigate('/dashboard/activities')}
           className="flex items-center text-indigo-600 hover:text-indigo-500"
         >
           <span className="mr-2">←</span>
@@ -115,7 +116,7 @@ export default function ActivityDetail({ activityId, onBack }: ActivityDetailPro
             <div className="flex-1">
               <div className="flex items-center mb-2">
                 <h1 className="text-3xl font-bold text-gray-900 mr-4">
-                  {activity.title}
+                  {activity.name || activity.title}
                 </h1>
                 {activity.category && (
                   <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium">
@@ -166,7 +167,7 @@ export default function ActivityDetail({ activityId, onBack }: ActivityDetailPro
                   <div>
                     <span className="text-sm text-gray-500">参与人数</span>
                     <div className="text-gray-900">
-                      {activity.currentParticipants} / {activity.maxParticipants} 人
+                      {activity.currentParticipants} / {activity.capacity || activity.maxParticipants} 人
                       <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
                         <div
                           className="bg-indigo-600 h-2 rounded-full"
