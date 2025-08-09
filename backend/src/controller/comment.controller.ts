@@ -11,6 +11,7 @@ import {
 } from '@midwayjs/core';
 import { Context } from '@midwayjs/koa';
 import { CommentService } from '../service/comment.service';
+import { UserService } from '../service/user.service';
 import type {
   CreateCommentRequest,
   UpdateCommentRequest,
@@ -25,23 +26,30 @@ export class CommentController {
   @Inject()
   commentService: CommentService;
 
+  @Inject()
+  userService: UserService;
+
   /**
    * 创建评论
    */
   @Post('/')
   async createComment(@Body() commentData: CreateCommentRequest) {
     try {
-      // 通过认证中间件获取用户ID
-      const userId = this.ctx.state.user?.id;
-      if (!userId) {
+      // 验证用户登录
+      const authHeader = this.ctx.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        this.ctx.status = 401;
         return {
           success: false,
-          message: '请先登录',
+          message: '未提供有效的认证令牌',
         };
       }
 
+      const token = authHeader.substring(7);
+      const user = await this.userService.getUserByToken(token);
+
       const comment = await this.commentService.createComment(
-        userId,
+        user.id,
         commentData
       );
 
@@ -173,17 +181,22 @@ export class CommentController {
     @Body() updateData: UpdateCommentRequest
   ) {
     try {
-      const userId = this.ctx.state.user?.id;
-      if (!userId) {
+      // 验证用户登录
+      const authHeader = this.ctx.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        this.ctx.status = 401;
         return {
           success: false,
-          message: '请先登录',
+          message: '未提供有效的认证令牌',
         };
       }
 
+      const token = authHeader.substring(7);
+      const user = await this.userService.getUserByToken(token);
+
       const comment = await this.commentService.updateComment(
         commentId,
-        userId,
+        user.id,
         updateData
       );
 
@@ -206,15 +219,20 @@ export class CommentController {
   @Del('/:id')
   async deleteComment(@Param('id') commentId: number) {
     try {
-      const userId = this.ctx.state.user?.id;
-      if (!userId) {
+      // 验证用户登录
+      const authHeader = this.ctx.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        this.ctx.status = 401;
         return {
           success: false,
-          message: '请先登录',
+          message: '未提供有效的认证令牌',
         };
       }
 
-      await this.commentService.deleteComment(commentId, userId);
+      const token = authHeader.substring(7);
+      const user = await this.userService.getUserByToken(token);
+
+      await this.commentService.deleteComment(commentId, user.id);
 
       return {
         success: true,

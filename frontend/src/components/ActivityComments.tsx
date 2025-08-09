@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getActivityComments, createComment, updateComment, deleteComment, getActivityRatingStats } from '../api/comment';
-import type { Comment, CreateCommentRequest } from '../../../shared/types';
+import type { Comment, CreateCommentRequest, User } from '../../../shared/types';
 
 interface ActivityCommentsProps {
   activityId: number;
@@ -13,11 +13,24 @@ export default function ActivityComments({ activityId }: ActivityCommentsProps) 
   const [currentPage, setCurrentPage] = useState(1);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingComment, setEditingComment] = useState<Comment | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [stats, setStats] = useState<{
     totalComments: number;
     averageRating: number;
     ratingDistribution: Record<string, number>;
   } | null>(null);
+
+  // 获取当前用户信息
+  useEffect(() => {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      try {
+        setCurrentUser(JSON.parse(savedUser));
+      } catch (error) {
+        console.error('Failed to parse user data:', error);
+      }
+    }
+  }, []);
 
   // 新评论表单数据
   const [newComment, setNewComment] = useState({
@@ -322,21 +335,23 @@ export default function ActivityComments({ activityId }: ActivityCommentsProps) 
                   )}
                 </div>
                 
-                {/* 当前用户的评论显示编辑/删除按钮 */}
-                <div className="flex space-x-2 ml-4">
-                  <button
-                    onClick={() => handleEditComment(comment)}
-                    className="text-blue-500 hover:text-blue-700 text-sm"
-                  >
-                    编辑
-                  </button>
-                  <button
-                    onClick={() => handleDeleteComment(comment.id)}
-                    className="text-red-500 hover:text-red-700 text-sm"
-                  >
-                    删除
-                  </button>
-                </div>
+                {/* 只有评论作者才能看到编辑/删除按钮 */}
+                {currentUser && currentUser.id === comment.userId && (
+                  <div className="flex space-x-2 ml-4">
+                    <button
+                      onClick={() => handleEditComment(comment)}
+                      className="text-blue-500 hover:text-blue-700 text-sm"
+                    >
+                      编辑
+                    </button>
+                    <button
+                      onClick={() => handleDeleteComment(comment.id)}
+                      className="text-red-500 hover:text-red-700 text-sm"
+                    >
+                      删除
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           ))
