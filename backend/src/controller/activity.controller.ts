@@ -314,4 +314,56 @@ export class ActivityController {
       };
     }
   }
+
+  // 获取活动统计信息（包括实时参与人数）
+  @Get('/:id/stats')
+  async getActivityStats(@Param('id') id: string) {
+    try {
+      const activityId = parseInt(id);
+      if (isNaN(activityId)) {
+        this.ctx.status = 400;
+        return {
+          success: false,
+          message: '无效的活动ID',
+          data: null,
+        };
+      }
+
+      const activity = await this.activityService.getActivityById(activityId);
+      if (!activity) {
+        this.ctx.status = 404;
+        return {
+          success: false,
+          message: '活动不存在',
+          data: null,
+        };
+      }
+
+      const bookingStats = await this.bookingService.getBookingStats(activityId);
+      const currentParticipants = await this.activityService.calculateCurrentParticipants(activityId);
+
+      return {
+        success: true,
+        message: '获取活动统计成功',
+        data: {
+          activity: {
+            id: activity.id,
+            name: activity.name,
+            capacity: activity.capacity,
+            currentParticipants,
+            availableSpots: activity.capacity - currentParticipants,
+            status: activity.status,
+          },
+          bookingStats,
+        },
+      };
+    } catch (error) {
+      this.ctx.status = 400;
+      return {
+        success: false,
+        message: error.message,
+        data: null,
+      };
+    }
+  }
 }

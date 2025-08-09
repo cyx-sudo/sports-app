@@ -17,6 +17,26 @@ export const getActivityDetail = (id: number) => {
   return request.get<ApiResponse<Activity>>(`/api/activity/${id}`);
 };
 
+// 获取活动统计信息
+export const getActivityStats = (id: number) => {
+  return request.get<ApiResponse<{
+    activity: {
+      id: number;
+      name: string;
+      capacity: number;
+      currentParticipants: number;
+      availableSpots: number;
+      status: string;
+    };
+    bookingStats: {
+      total: number;
+      pending: number;
+      confirmed: number;
+      cancelled: number;
+    };
+  }>>(`/api/activity/${id}/stats`);
+};
+
 // 获取活动分类
 export const getActivityCategories = () => {
   return request.get<ApiResponse<string[]>>('/api/activity/categories');

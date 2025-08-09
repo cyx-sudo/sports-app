@@ -86,6 +86,11 @@ export class ActivityService {
       .prepare(listQuery)
       .all(...queryParams, limit, offset) as Activity[];
 
+    // 为每个活动动态计算当前参与人数
+    for (const activity of activities) {
+      activity.currentParticipants = await this.calculateCurrentParticipants(activity.id);
+    }
+
     return {
       items: activities,
       total: countResult.total,
@@ -95,6 +100,21 @@ export class ActivityService {
     };
   }
 
+  // 根据预约记录计算活动的实际参与人数
+  async calculateCurrentParticipants(activityId: number): Promise<number> {
+    const db = this.databaseService.getDatabase();
+    
+    const result = db
+      .prepare(`
+        SELECT COUNT(*) as count 
+        FROM bookings 
+        WHERE activityId = ? AND status IN ('pending', 'confirmed')
+      `)
+      .get(activityId) as { count: number };
+    
+    return result.count || 0;
+  }
+
   // 根据ID获取活动详情
   async getActivityById(id: number): Promise<Activity | null> {
     const db = this.databaseService.getDatabase();
@@ -102,6 +122,12 @@ export class ActivityService {
     const activity = db
       .prepare('SELECT * FROM activities WHERE id = ?')
       .get(id) as Activity;
+    
+    if (activity) {
+      // 根据实际预约记录计算当前参与人数
+      activity.currentParticipants = await this.calculateCurrentParticipants(id);
+    }
+    
     return activity || null;
   }
 
@@ -203,40 +229,6 @@ export class ActivityService {
     return categories.map(c => c.category);
   }
 
-  // 增加参与者数量
-  async increaseParticipants(activityId: number): Promise<boolean> {
-    const db = this.databaseService.getDatabase();
-
-    const result = db
-      .prepare(
-        `
-      UPDATE activities 
-      SET currentParticipants = currentParticipants + 1, updatedAt = CURRENT_TIMESTAMP 
-      WHERE id = ? AND currentParticipants < capacity
-    `
-      )
-      .run(activityId);
-
-    return result.changes > 0;
-  }
-
-  // 减少参与者数量
-  async decreaseParticipants(activityId: number): Promise<boolean> {
-    const db = this.databaseService.getDatabase();
-
-    const result = db
-      .prepare(
-        `
-      UPDATE activities 
-      SET currentParticipants = currentParticipants - 1, updatedAt = CURRENT_TIMESTAMP 
-      WHERE id = ? AND currentParticipants > 0
-    `
-      )
-      .run(activityId);
-
-    return result.changes > 0;
-  }
-
   // 检查活动是否可以预约
   async isActivityBookable(activityId: number): Promise<boolean> {
     const activity = await this.getActivityById(activityId);
@@ -244,9 +236,12 @@ export class ActivityService {
       return false;
     }
 
+    // 获取当前实际参与人数
+    const currentParticipants = await this.calculateCurrentParticipants(activityId);
+
     return (
       activity.status === 'active' &&
-      activity.currentParticipants < activity.capacity &&
+      currentParticipants < activity.capacity &&
       new Date(activity.startTime) > new Date()
     );
   }

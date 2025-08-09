@@ -1,30 +1,62 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getActivityDetail, bookActivity } from '../api/activity';
+import { getActivityDetail, getActivityStats, bookActivity } from '../api/activity';
 import ActivityComments from './ActivityComments';
 import type { Activity } from '../../../shared/types';
+
+interface ActivityStats {
+  activity: {
+    id: number;
+    name: string;
+    capacity: number;
+    currentParticipants: number;
+    availableSpots: number;
+    status: string;
+  };
+  bookingStats: {
+    total: number;
+    pending: number;
+    confirmed: number;
+    cancelled: number;
+  };
+}
 
 export default function ActivityDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const activityId = parseInt(id || '0', 10);
   const [activity, setActivity] = useState<Activity | null>(null);
+  const [stats, setStats] = useState<ActivityStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [bookingLoading, setBookingLoading] = useState(false);
 
-  // 加载活动详情
+  // 加载活动详情和统计信息
   const loadActivityDetail = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await getActivityDetail(activityId);
       
-      if (response.data.success && response.data.data) {
+      // 并行加载活动详情和统计信息
+      const [detailResponse, statsResponse] = await Promise.all([
+        getActivityDetail(activityId),
+        getActivityStats(activityId)
+      ]);
+      
+      if (detailResponse.data.success && detailResponse.data.data) {
         // 后端返回的数据结构是 { activity: {...}, bookingStats: {...} }
-        const activityData = response.data.data as { activity?: Activity } & Activity;
-        setActivity(activityData.activity || activityData);
+        const activityData = detailResponse.data.data as { activity?: Activity } & Activity;
+        const activityInfo = activityData.activity || activityData;
+        
+        // 如果统计数据加载成功，使用统计数据中的实时人数
+        if (statsResponse.data.success && statsResponse.data.data) {
+          setStats(statsResponse.data.data);
+          // 更新活动信息中的当前参与人数
+          activityInfo.currentParticipants = statsResponse.data.data.activity.currentParticipants;
+        }
+        
+        setActivity(activityInfo);
       } else {
-        setError(response.data.message || '加载活动详情失败');
+        setError(detailResponse.data.message || '加载活动详情失败');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : '网络错误');
@@ -164,10 +196,15 @@ export default function ActivityDetail() {
                 
                 <div className="flex items-center">
                   <span className="w-6 h-6 mr-3 text-gray-400">👥</span>
-                  <div>
+                  <div className="flex-1">
                     <span className="text-sm text-gray-500">参与人数</span>
                     <div className="text-gray-900">
                       {activity.currentParticipants} / {activity.capacity || activity.maxParticipants} 人
+                      {stats && (
+                        <span className="ml-2 text-sm text-gray-500">
+                          (可用: {stats.activity.availableSpots} 个名额)
+                        </span>
+                      )}
                       <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
                         <div
                           className="bg-indigo-600 h-2 rounded-full"
@@ -177,6 +214,15 @@ export default function ActivityDetail() {
                         ></div>
                       </div>
                     </div>
+                    {stats && (
+                      <div className="mt-2 text-xs text-gray-500 space-y-1">
+                        <div>待确认: {stats.bookingStats.pending} 人</div>
+                        <div>已确认: {stats.bookingStats.confirmed} 人</div>
+                        {stats.bookingStats.cancelled > 0 && (
+                          <div>已取消: {stats.bookingStats.cancelled} 人</div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 

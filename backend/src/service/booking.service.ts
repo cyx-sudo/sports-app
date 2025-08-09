@@ -45,6 +45,18 @@ export class BookingService {
       throw new Error('您已经预约过该活动');
     }
 
+    // 获取活动详情进行最终容量检查
+    const activity = await this.activityService.getActivityById(bookingData.activityId);
+    if (!activity) {
+      throw new Error('活动不存在');
+    }
+
+    // 再次检查容量（使用动态计算的人数）
+    const currentParticipants = await this.activityService.calculateCurrentParticipants(bookingData.activityId);
+    if (currentParticipants >= activity.capacity) {
+      throw new Error('活动已满，无法预约');
+    }
+
     // 使用事务确保数据一致性
     const transaction = db.transaction(() => {
       // 创建预约
@@ -54,14 +66,6 @@ export class BookingService {
       `);
 
       const result = insertBooking.run(userId, bookingData.activityId);
-
-      // 增加活动参与者数量
-      const success = this.activityService.increaseParticipants(
-        bookingData.activityId
-      );
-      if (!success) {
-        throw new Error('活动已满，预约失败');
-      }
 
       return result.lastInsertRowid as number;
     });
@@ -252,27 +256,25 @@ export class BookingService {
     };
   }
 
-  // 取消预约
+    // 取消预约
   async cancelBooking(userId: number, bookingId: number): Promise<boolean> {
     const db = this.databaseService.getDatabase();
 
-    // 获取预约信息
+    // 验证预约是否存在且属于当前用户
     const booking = db
-      .prepare(
-        `
-      SELECT * FROM bookings 
-      WHERE id = ? AND userId = ? AND status != 'cancelled'
-    `
-      )
+      .prepare('SELECT * FROM bookings WHERE id = ? AND userId = ?')
       .get(bookingId, userId) as Booking;
 
     if (!booking) {
-      throw new Error('预约不存在或已取消');
+      throw new Error('预约不存在或无权限取消');
     }
 
-    // 使用事务确保数据一致性
+    if (booking.status === 'cancelled') {
+      throw new Error('预约已取消');
+    }
+
     const transaction = db.transaction(() => {
-      // 更新预约状态
+      // 更新预约状态为取消
       const updateBooking = db.prepare(`
         UPDATE bookings 
         SET status = 'cancelled', updatedAt = CURRENT_TIMESTAMP 
@@ -280,9 +282,6 @@ export class BookingService {
       `);
 
       const result = updateBooking.run(bookingId);
-
-      // 减少活动参与者数量
-      this.activityService.decreaseParticipants(booking.activityId);
 
       return result.changes > 0;
     });
