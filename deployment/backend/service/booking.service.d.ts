@@ -1,9 +1,11 @@
 import { DatabaseService } from './database.service';
 import { ActivityService } from './activity.service';
+import { ActivityHistoryService } from './activity-history.service';
 import { Booking, CreateBookingRequest, BookingListRequest } from '../interface/activity';
 export declare class BookingService {
     databaseService: DatabaseService;
     activityService: ActivityService;
+    activityHistoryService: ActivityHistoryService;
     createBooking(userId: number, bookingData: CreateBookingRequest): Promise<Booking>;
     getBookingById(id: number): Promise<Booking | null>;
     getUserBookings(userId: number, params: BookingListRequest): Promise<{
