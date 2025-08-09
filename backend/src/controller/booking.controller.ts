@@ -212,4 +212,77 @@ export class BookingController {
       };
     }
   }
+
+  // 检查用户是否已预约某个活动
+  @Get('/check/:activityId')
+  async checkUserBooking(@Param('activityId') activityId: string) {
+    try {
+      const authHeader = this.ctx.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        this.ctx.status = 401;
+        return {
+          success: false,
+          message: '未提供有效的认证令牌',
+          data: null,
+        };
+      }
+
+      const token = authHeader.substring(7);
+      const user = await this.userService.getUserByToken(token);
+
+      const activityIdNum = parseInt(activityId);
+      const result = await this.bookingService.checkUserBooking(
+        user.id,
+        activityIdNum
+      );
+
+      return {
+        success: true,
+        message: '检查预约状态成功',
+        data: result,
+      };
+    } catch (error) {
+      this.ctx.status = 400;
+      return {
+        success: false,
+        message: error.message,
+        data: null,
+      };
+    }
+  }
+
+  // 确认参加活动
+  @Put('/:id/attend')
+  async confirmAttendance(@Param('id') id: string) {
+    try {
+      const authHeader = this.ctx.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        this.ctx.status = 401;
+        return {
+          success: false,
+          message: '未提供有效的认证令牌',
+          data: null,
+        };
+      }
+
+      const token = authHeader.substring(7);
+      const user = await this.userService.getUserByToken(token);
+
+      const bookingId = parseInt(id);
+      await this.bookingService.confirmAttendance(user.id, bookingId);
+
+      return {
+        success: true,
+        message: '确认参加成功',
+        data: null,
+      };
+    } catch (error) {
+      this.ctx.status = 400;
+      return {
+        success: false,
+        message: error.message,
+        data: null,
+      };
+    }
+  }
 }

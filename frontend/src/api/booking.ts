@@ -12,5 +12,15 @@ export const getMyBookings = (params?: {
 
 // 取消预约
 export const cancelBooking = (id: number) => {
-  return request.delete(`/api/booking/${id}`);
+  return request.delete<ApiResponse<null>>(`/api/booking/${id}`);
+};
+
+// 检查用户是否已预约某个活动
+export const checkUserBooking = (activityId: number) => {
+  return request.get<ApiResponse<{ isBooked: boolean; bookingId?: number }>>(`/api/booking/check/${activityId}`);
+};
+
+// 确认参加活动
+export const confirmAttendance = (bookingId: number) => {
+  return request.put<ApiResponse<null>>(`/api/booking/${bookingId}/attend`);
 };

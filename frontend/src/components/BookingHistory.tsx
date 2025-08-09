@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getMyBookings, cancelBooking } from '../api/booking';
+import { getMyBookings, cancelBooking, confirmAttendance } from '../api/booking';
 import type { Booking } from '../../../shared/types';
 
 export default function BookingHistory() {
@@ -53,15 +53,43 @@ export default function BookingHistory() {
 
     try {
       const response = await cancelBooking(bookingId);
+      
       if (response.data.success) {
         // 重新获取列表
         fetchBookings();
+        // 显示成功消息
+        alert('预约取消成功！');
       } else {
         setError(response.data.message || '取消预约失败');
       }
     } catch (err) {
       console.error('取消预约错误:', err);
-      setError('取消预约失败，请稍后重试');
+      const errorMessage = err instanceof Error ? err.message : '取消预约失败，请稍后重试';
+      setError(errorMessage);
+      alert(errorMessage);
+    }
+  };
+
+  // 确认参加活动
+  const handleConfirmAttendance = async (bookingId: number) => {
+    if (!confirm('确认参加这个活动吗？一旦确认将无法取消预约。')) return;
+
+    try {
+      const response = await confirmAttendance(bookingId);
+      if (response.data.success) {
+        alert('确认参加成功！感谢您的参与。');
+        // 重新获取列表
+        fetchBookings();
+      } else {
+        const errorMsg = response.data.message || '确认参加失败';
+        setError(errorMsg);
+        alert(errorMsg);
+      }
+    } catch (err) {
+      console.error('确认参加错误:', err);
+      const errorMessage = err instanceof Error ? err.message : '确认参加失败，请稍后重试';
+      setError(errorMessage);
+      alert(errorMessage);
     }
   };
 
@@ -109,14 +137,24 @@ export default function BookingHistory() {
               全部
             </button>
             <button
-              onClick={() => handleStatusChange('active')}
+              onClick={() => handleStatusChange('pending')}
               className={`px-3 py-1 text-sm rounded ${
-                statusFilter === 'active'
+                statusFilter === 'pending'
                   ? 'bg-green-100 text-green-800'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              有效
+              待确认
+            </button>
+            <button
+              onClick={() => handleStatusChange('confirmed')}
+              className={`px-3 py-1 text-sm rounded ${
+                statusFilter === 'confirmed'
+                  ? 'bg-blue-100 text-blue-800'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              已确认
             </button>
             <button
               onClick={() => handleStatusChange('cancelled')}
@@ -153,9 +191,16 @@ export default function BookingHistory() {
                     <span className={`ml-3 px-2 py-1 text-xs rounded-full ${
                       (booking.status as string) === 'cancelled'
                         ? 'bg-red-100 text-red-800'
-                        : 'bg-green-100 text-green-800'
+                        : (booking.status as string) === 'confirmed'
+                        ? 'bg-blue-100 text-blue-800'
+                        : 'bg-yellow-100 text-yellow-800'
                     }`}>
-                      {(booking.status as string) === 'cancelled' ? '已取消' : '有效'}
+                      {(booking.status as string) === 'cancelled' 
+                        ? '已取消' 
+                        : (booking.status as string) === 'confirmed'
+                        ? '已确认'
+                        : '待确认'
+                      }
                     </span>
                   </div>
                   
@@ -178,11 +223,26 @@ export default function BookingHistory() {
                   </div>
                 </div>
 
-                <div className="mt-4 md:mt-0 md:ml-6">
-                  {(booking.status as string) !== 'cancelled' && (
+                <div className="mt-4 md:mt-0 md:ml-6 flex gap-2">
+                  {/* 确认参加按钮 - 只在活动已开始且状态为pending时显示 */}
+                  {booking.activity?.startTime && 
+                   new Date(booking.activity.startTime) <= new Date() &&
+                   (booking.status as string) === 'pending' && (
+                    <button
+                      onClick={() => handleConfirmAttendance(booking.id)}
+                      className="px-4 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700"
+                    >
+                      确认参加
+                    </button>
+                  )}
+                  
+                  {/* 取消预约按钮 - 只在未取消且未确认状态时显示 */}
+                  {(booking.status as string) !== 'cancelled' && 
+                   (booking.status as string) !== 'confirmed' && (
                     <button
                       onClick={() => handleCancelBooking(booking.id)}
                       className="px-4 py-2 text-sm border border-red-300 text-red-700 rounded hover:bg-red-50"
+                      type="button"
                     >
                       取消预约
                     </button>

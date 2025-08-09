@@ -221,8 +221,32 @@ export class ActivityService {
   async deleteActivity(id: number): Promise<boolean> {
     const db = this.databaseService.getDatabase();
 
-    const result = db.prepare('DELETE FROM activities WHERE id = ?').run(id);
-    return result.changes > 0;
+    // 检查是否有相关的预约记录
+    const bookingCount = db
+      .prepare(
+        'SELECT COUNT(*) as count FROM bookings WHERE activityId = ? AND status != ?'
+      )
+      .get(id, 'cancelled') as { count: number };
+
+    if (bookingCount.count > 0) {
+      throw new Error(
+        `无法删除活动，该活动还有 ${bookingCount.count} 个有效预约记录。请先处理相关预约。`
+      );
+    }
+
+    // 如果没有有效预约记录，则可以安全删除
+    const transaction = db.transaction(() => {
+      // 先删除已取消的预约记录（如果有的话）
+      db.prepare(
+        'DELETE FROM bookings WHERE activityId = ? AND status = ?'
+      ).run(id, 'cancelled');
+
+      // 然后删除活动
+      const result = db.prepare('DELETE FROM activities WHERE id = ?').run(id);
+      return result.changes > 0;
+    });
+
+    return transaction();
   }
 
   // 获取活动分类列表

@@ -349,4 +349,58 @@ export class BookingService {
       cancelled: stats.cancelled || 0,
     };
   }
+
+  // 检查用户是否已预约某个活动
+  async checkUserBooking(
+    userId: number,
+    activityId: number
+  ): Promise<{ isBooked: boolean; bookingId?: number }> {
+    const db = this.databaseService.getDatabase();
+
+    const booking = db
+      .prepare(
+        'SELECT id FROM bookings WHERE userId = ? AND activityId = ? AND status != ?'
+      )
+      .get(userId, activityId, 'cancelled') as { id: number } | undefined;
+
+    return {
+      isBooked: !!booking,
+      bookingId: booking?.id,
+    };
+  }
+
+  // 确认参加活动
+  async confirmAttendance(userId: number, bookingId: number): Promise<void> {
+    const db = this.databaseService.getDatabase();
+
+    // 检查预约是否属于该用户
+    const booking = db
+      .prepare('SELECT * FROM bookings WHERE id = ? AND userId = ?')
+      .get(bookingId, userId) as any;
+
+    if (!booking) {
+      throw new Error('预约不存在或无权限');
+    }
+
+    // 检查活动是否已开始
+    const activity = db
+      .prepare('SELECT startTime FROM activities WHERE id = ?')
+      .get(booking.activityId) as { startTime: string };
+
+    if (!activity) {
+      throw new Error('活动不存在');
+    }
+
+    const now = new Date();
+    const startTime = new Date(activity.startTime);
+
+    if (startTime > now) {
+      throw new Error('活动尚未开始，无法确认参加');
+    }
+
+    // 更新预约状态为已确认
+    db.prepare(
+      'UPDATE bookings SET status = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?'
+    ).run('confirmed', bookingId);
+  }
 }

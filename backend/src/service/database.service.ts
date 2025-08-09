@@ -27,6 +27,9 @@ export class DatabaseService {
     // 创建收藏表
     this.createFavoriteTable();
 
+    // 创建活动历史表
+    this.createActivityHistoryTable();
+
     // 创建评论表
     this.createCommentTable();
 
@@ -147,6 +150,42 @@ export class DatabaseService {
     );
     this.db.exec(
       'CREATE INDEX IF NOT EXISTS idx_favorite_activity ON favorites(activityId)'
+    );
+  }
+
+  private createActivityHistoryTable() {
+    const createTableSQL = `
+      CREATE TABLE IF NOT EXISTS activity_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        userId INTEGER NOT NULL,
+        activityId INTEGER NOT NULL,
+        bookingId INTEGER NOT NULL,
+        status TEXT NOT NULL CHECK(status IN ('completed', 'cancelled', 'no-show')),
+        participatedAt DATETIME NOT NULL,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (activityId) REFERENCES activities(id) ON DELETE CASCADE,
+        FOREIGN KEY (bookingId) REFERENCES bookings(id) ON DELETE CASCADE
+      )
+    `;
+
+    this.db.exec(createTableSQL);
+
+    // 创建索引
+    this.db.exec(
+      'CREATE INDEX IF NOT EXISTS idx_activity_history_user ON activity_history(userId)'
+    );
+    this.db.exec(
+      'CREATE INDEX IF NOT EXISTS idx_activity_history_activity ON activity_history(activityId)'
+    );
+    this.db.exec(
+      'CREATE INDEX IF NOT EXISTS idx_activity_history_booking ON activity_history(bookingId)'
+    );
+    this.db.exec(
+      'CREATE INDEX IF NOT EXISTS idx_activity_history_status ON activity_history(status)'
+    );
+    this.db.exec(
+      'CREATE INDEX IF NOT EXISTS idx_activity_history_participated ON activity_history(participatedAt)'
     );
   }
 
