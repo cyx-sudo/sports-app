@@ -88,7 +88,9 @@ export class ActivityService {
 
     // 为每个活动动态计算当前参与人数
     for (const activity of activities) {
-      activity.currentParticipants = await this.calculateCurrentParticipants(activity.id);
+      activity.currentParticipants = await this.calculateCurrentParticipants(
+        activity.id
+      );
     }
 
     return {
@@ -103,15 +105,17 @@ export class ActivityService {
   // 根据预约记录计算活动的实际参与人数
   async calculateCurrentParticipants(activityId: number): Promise<number> {
     const db = this.databaseService.getDatabase();
-    
+
     const result = db
-      .prepare(`
+      .prepare(
+        `
         SELECT COUNT(*) as count 
         FROM bookings 
         WHERE activityId = ? AND status IN ('pending', 'confirmed')
-      `)
+      `
+      )
       .get(activityId) as { count: number };
-    
+
     return result.count || 0;
   }
 
@@ -122,12 +126,14 @@ export class ActivityService {
     const activity = db
       .prepare('SELECT * FROM activities WHERE id = ?')
       .get(id) as Activity;
-    
+
     if (activity) {
       // 根据实际预约记录计算当前参与人数
-      activity.currentParticipants = await this.calculateCurrentParticipants(id);
+      activity.currentParticipants = await this.calculateCurrentParticipants(
+        id
+      );
     }
-    
+
     return activity || null;
   }
 
@@ -237,7 +243,9 @@ export class ActivityService {
     }
 
     // 获取当前实际参与人数
-    const currentParticipants = await this.calculateCurrentParticipants(activityId);
+    const currentParticipants = await this.calculateCurrentParticipants(
+      activityId
+    );
 
     return (
       activity.status === 'active' &&

@@ -46,13 +46,18 @@ export class BookingService {
     }
 
     // 获取活动详情进行最终容量检查
-    const activity = await this.activityService.getActivityById(bookingData.activityId);
+    const activity = await this.activityService.getActivityById(
+      bookingData.activityId
+    );
     if (!activity) {
       throw new Error('活动不存在');
     }
 
     // 再次检查容量（使用动态计算的人数）
-    const currentParticipants = await this.activityService.calculateCurrentParticipants(bookingData.activityId);
+    const currentParticipants =
+      await this.activityService.calculateCurrentParticipants(
+        bookingData.activityId
+      );
     if (currentParticipants >= activity.capacity) {
       throw new Error('活动已满，无法预约');
     }
@@ -256,7 +261,7 @@ export class BookingService {
     };
   }
 
-    // 取消预约
+  // 取消预约
   async cancelBooking(userId: number, bookingId: number): Promise<boolean> {
     const db = this.databaseService.getDatabase();
 

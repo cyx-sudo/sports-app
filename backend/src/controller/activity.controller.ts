@@ -339,8 +339,11 @@ export class ActivityController {
         };
       }
 
-      const bookingStats = await this.bookingService.getBookingStats(activityId);
-      const currentParticipants = await this.activityService.calculateCurrentParticipants(activityId);
+      const bookingStats = await this.bookingService.getBookingStats(
+        activityId
+      );
+      const currentParticipants =
+        await this.activityService.calculateCurrentParticipants(activityId);
 
       return {
         success: true,
