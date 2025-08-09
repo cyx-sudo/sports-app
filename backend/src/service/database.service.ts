@@ -24,6 +24,9 @@ export class DatabaseService {
     // 创建预约表
     this.createBookingTable();
 
+    // 创建收藏表
+    this.createFavoriteTable();
+
     // 创建评论表
     this.createCommentTable();
 
@@ -120,6 +123,30 @@ export class DatabaseService {
     );
     this.db.exec(
       'CREATE INDEX IF NOT EXISTS idx_booking_status ON bookings(status)'
+    );
+  }
+
+  private createFavoriteTable() {
+    const createTableSQL = `
+      CREATE TABLE IF NOT EXISTS favorites (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        userId INTEGER NOT NULL,
+        activityId INTEGER NOT NULL,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (activityId) REFERENCES activities(id) ON DELETE CASCADE,
+        UNIQUE(userId, activityId)
+      )
+    `;
+
+    this.db.exec(createTableSQL);
+
+    // 创建索引
+    this.db.exec(
+      'CREATE INDEX IF NOT EXISTS idx_favorite_user ON favorites(userId)'
+    );
+    this.db.exec(
+      'CREATE INDEX IF NOT EXISTS idx_favorite_activity ON favorites(activityId)'
     );
   }
 

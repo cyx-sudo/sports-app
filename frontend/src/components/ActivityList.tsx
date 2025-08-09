@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getActivityList, getActivityCategories, bookActivity } from '../api/activity';
+import { addFavorite, removeFavorite, checkFavorite } from '../api/favorite';
 import type { Activity } from '../../../shared/types';
 
 export default function ActivityList() {
@@ -13,6 +14,7 @@ export default function ActivityList() {
   const [totalPages, setTotalPages] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [searchKeyword, setSearchKeyword] = useState('');
+  const [favoriteStates, setFavoriteStates] = useState<Record<number, boolean>>({});
 
   // 加载活动列表
   const loadActivities = async (page = 1, category = '', search = '') => {
@@ -82,10 +84,63 @@ export default function ActivityList() {
     loadActivities(page, selectedCategory, searchKeyword);
   };
 
+  // 加载收藏状态
+  const loadFavoriteStates = async (activityIds: number[]) => {
+    try {
+      const states: Record<number, boolean> = {};
+      for (const id of activityIds) {
+        try {
+          const response = await checkFavorite(id);
+          if (response.data.success) {
+            states[id] = response.data.data?.isFavorited || false;
+          }
+        } catch {
+          states[id] = false;
+        }
+      }
+      setFavoriteStates(states);
+    } catch (err) {
+      console.error('加载收藏状态失败:', err);
+    }
+  };
+
+  // 切换收藏状态
+  const handleToggleFavorite = async (activityId: number) => {
+    try {
+      const isFavorited = favoriteStates[activityId];
+      
+      if (isFavorited) {
+        const response = await removeFavorite(activityId);
+        if (response.data.success) {
+          setFavoriteStates(prev => ({ ...prev, [activityId]: false }));
+        } else {
+          alert(response.data.message || '取消收藏失败');
+        }
+      } else {
+        const response = await addFavorite(activityId);
+        if (response.data.success) {
+          setFavoriteStates(prev => ({ ...prev, [activityId]: true }));
+        } else {
+          alert(response.data.message || '收藏失败');
+        }
+      }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : '网络错误');
+    }
+  };
+
   useEffect(() => {
     loadActivities();
     loadCategories();
   }, []);
+
+  // 当活动列表更新时，加载收藏状态
+  useEffect(() => {
+    if (activities.length > 0) {
+      const activityIds = activities.map(activity => activity.id);
+      loadFavoriteStates(activityIds);
+    }
+  }, [activities]);
 
   if (loading && activities.length === 0) {
     return (
@@ -184,6 +239,17 @@ export default function ActivityList() {
                   className="flex-1 px-3 py-2 text-sm border border-gray-300 text-gray-700 rounded hover:bg-gray-50"
                 >
                   查看详情
+                </button>
+                <button
+                  onClick={() => handleToggleFavorite(activity.id)}
+                  className={`px-3 py-2 text-sm rounded ${
+                    favoriteStates[activity.id]
+                      ? 'bg-red-50 text-red-600 hover:bg-red-100'
+                      : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                  }`}
+                  title={favoriteStates[activity.id] ? '取消收藏' : '收藏'}
+                >
+                  {favoriteStates[activity.id] ? '❤️' : '🤍'}
                 </button>
                 <button
                   onClick={() => handleBookActivity(activity.id)}

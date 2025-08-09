@@ -6,6 +6,7 @@ import ActivityDetail from './ActivityDetail';
 import BookingHistory from './BookingHistory';
 import AdminActivityManagement from './AdminActivityManagement';
 import Profile from './Profile';
+import FavoriteList from './FavoriteList';
 
 interface DashboardProps {
   user: User;
@@ -47,6 +48,7 @@ export default function Dashboard({ user, onLogout, onUserUpdate }: DashboardPro
     const path = location.pathname;
     if (path.includes('/activities')) return 'activities';
     if (path.includes('/bookings')) return 'bookings';
+    if (path.includes('/favorites')) return 'favorites';
     if (path.includes('/admin')) return 'admin';
     if (path.includes('/profile')) return 'profile';
     return 'activities'; // 默认为活动列表
@@ -155,6 +157,21 @@ export default function Dashboard({ user, onLogout, onUserUpdate }: DashboardPro
                 </svg>
                 我的预约
               </NavLink>
+              <NavLink
+                to="/dashboard/favorites"
+                className={({ isActive }) => 
+                  `flex-1 flex items-center justify-center py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
+                    isActive
+                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  }`
+                }
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+                我的收藏
+              </NavLink>
               {/* 管理员标签页 */}
               {isAdmin && (
                 <NavLink
@@ -205,6 +222,11 @@ export default function Dashboard({ user, onLogout, onUserUpdate }: DashboardPro
                     <p className="text-gray-600 mt-1">查看和管理您的所有预约记录</p>
                   </div>
                   <BookingHistory />
+                </div>
+              } />
+              <Route path="favorites" element={
+                <div className="card p-6">
+                  <FavoriteList />
                 </div>
               } />
               {isAdmin && (
