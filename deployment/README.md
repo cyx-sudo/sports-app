@@ -1,87 +1,26 @@
-# 体育活动预订系统 - 部署包
+# 体育活动预订系统
 
-## 构建信息
-- 构建时间: 2025年8月9日
-- 项目版本: 1.0.0
-- Node.js 版本要求: >= 18.0.0
+2025年南京大学暑期课程web开发大作业，一个完整的体育活动预订管理系统，包含前端用户界面和后端 API 服务。
 
-## 目录结构
+## GitHub仓库地址 
+包含了前后端文件
+https://github.com/cyx-sudo/sports-app/ 
+
+## 打包平台 
+Windows 11
+
+## 项目结构
 
 ```
-deployment/
-├── frontend/           # 前端构建产物
-│   ├── index.html     # 主页面
-│   ├── assets/        # 静态资源
-│   │   ├── index-BInDSV8X.css  # 样式文件 (29.09 kB)
-│   │   └── index-CoLXBmVV.js   # JavaScript文件 (346.51 kB)
-│   └── vite.svg       # 图标文件
-├── backend/           # 后端构建产物
-│   ├── dist/          # 编译后的JavaScript代码
-│   ├── data/          # 数据库文件
-│   ├── package.json   # 依赖配置
-│   └── bootstrap.js   # 启动文件
-└── README.md          # 本文件
+sports-booking-system/
+├── frontend/          # React + TypeScript 前端应用
+├── backend/           # Midway.js + Node.js 后端服务
+├── shared/            # 共享类型定义和工具
+├── .github/           # CI/CD 配置
+└── docs/              # 项目文档
 ```
 
-## 部署说明
-
-### 后端部署
-
-1. 进入后端目录：
-   ```bash
-   cd deployment/backend
-   ```
-
-2. 安装生产依赖：
-   ```bash
-   npm install --production
-   ```
-
-3. 启动后端服务：
-   ```bash
-   npm start
-   # 或
-   node bootstrap.js
-   ```
-
-4. 默认端口：7001
-   - API地址：http://localhost:7001/api
-   - 健康检查：http://localhost:7001/
-
-### 前端部署
-
-1. 静态文件部署：
-   - 将 `frontend/` 目录下的所有文件部署到Web服务器
-   - 支持 Nginx、Apache、IIS 等静态文件服务器
-
-2. Nginx 配置示例：
-   ```nginx
-   server {
-       listen 80;
-       server_name your-domain.com;
-       root /path/to/deployment/frontend;
-       index index.html;
-       
-       location / {
-           try_files $uri $uri/ /index.html;
-       }
-       
-       location /api/ {
-           proxy_pass http://localhost:7001;
-           proxy_set_header Host $host;
-           proxy_set_header X-Real-IP $remote_addr;
-       }
-   }
-   ```
-
-## 环境变量
-
-### 后端环境变量
-- `NODE_ENV`: 运行环境 (production)
-- `PORT`: 服务端口 (默认 7001)
-- `DATABASE_PATH`: 数据库文件路径 (可选)
-
-## 功能特性
+## 核心功能
 
 ### 基础功能
 - ✅ 多用户注册与登录
@@ -98,56 +37,33 @@ deployment/
 - ✅ 活动历史记录
 - ✅ 活动确认
 
-## 技术架构
 
-### 前端技术栈
+## 对课程内容的改进建议
+ 建议本课程与软工二课程合作，可以参与软工二的实践部分，进行web项目的开发，形成课程间的有效联动和协同
+
+## 技术栈
+
+### 前端
 - React 19.1.0
 - TypeScript 5.8.3
 - Vite 7.0.4
 - Tailwind CSS 4.1.11
+- Axios HTTP 客户端
 
-### 后端技术栈
+### 后端
 - Midway.js 3.12.0
 - Node.js
 - TypeScript 4.8.0
 - SQLite + better-sqlite3
+- bcryptjs 密码加密
+- jsonwebtoken JWT 认证
 
-## 默认账户
+## CI/CD
 
-### 管理员账户
-- 用户名: admin
-- 密码: admin123
+项目使用 GitHub Actions 进行持续集成和部署：
 
-### 测试用户账户
-- 用户名: test999
-- 密码: test123
-
-## 注意事项
-
-1. 确保后端先启动，前端才能正常工作
-2. 数据库文件已包含测试数据
-3. 生产环境建议修改默认密码
-4. 建议配置 HTTPS 和防火墙
-5. 定期备份数据库文件
-
-## 故障排除
-
-### 常见问题
-
-1. **后端启动失败**
-   - 检查 Node.js 版本是否 >= 18.0.0
-   - 检查端口 7001 是否被占用
-   - 检查数据库文件权限
-
-2. **前端无法访问后端**
-   - 检查后端服务是否正常启动
-   - 检查防火墙设置
-   - 检查代理配置
-
-3. **登录失败**
-   - 确认使用正确的用户名和密码
-   - 检查后端日志
-
-## 联系信息
-
-如有问题，请联系开发团队。
+- **代码检查**: ESLint + TypeScript 编译检查
+- **单元测试**: 前后端测试套件
+- **集成测试**: API 健康检查
+- **安全扫描**: npm audit + CodeQL
+- **自动部署**: 主分支自动部署
