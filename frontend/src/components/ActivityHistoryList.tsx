@@ -277,9 +277,9 @@ export default function ActivityHistoryList() {
               <div className="flex gap-2">
                 <button
                   onClick={() => navigate(`/dashboard/activities/${history.activity.id}`)}
-                  className="px-3 py-2 text-sm border border-gray-300 text-gray-700 rounded hover:bg-gray-50"
+                  className="px-3 py-2 text-sm bg-blue-50 text-blue-600 rounded hover:bg-blue-100"
                 >
-                  查看活动
+                  查看详情
                 </button>
                 <button
                   onClick={() => handleDeleteHistory(history.id)}

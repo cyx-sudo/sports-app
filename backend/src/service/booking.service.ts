@@ -1,6 +1,7 @@
 import { Provide, Scope, ScopeEnum, Inject } from '@midwayjs/core';
 import { DatabaseService } from './database.service';
 import { ActivityService } from './activity.service';
+import { ActivityHistoryService } from './activity-history.service';
 import {
   Booking,
   CreateBookingRequest,
@@ -15,6 +16,9 @@ export class BookingService {
 
   @Inject()
   activityService: ActivityService;
+
+  @Inject()
+  activityHistoryService: ActivityHistoryService;
 
   // 创建预约
   async createBooking(
@@ -402,5 +406,18 @@ export class BookingService {
     db.prepare(
       'UPDATE bookings SET status = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?'
     ).run('confirmed', bookingId);
+
+    // 创建活动历史记录
+    try {
+      await this.activityHistoryService.addActivityHistory(
+        userId,
+        booking.activityId,
+        bookingId,
+        'completed'
+      );
+    } catch (error) {
+      console.warn('创建活动历史记录失败:', error);
+      // 不影响主要流程，只记录警告
+    }
   }
 }

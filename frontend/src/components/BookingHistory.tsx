@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getMyBookings, cancelBooking, confirmAttendance } from '../api/booking';
 import type { Booking } from '../../../shared/types';
 
 export default function BookingHistory() {
+  const navigate = useNavigate();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -224,6 +226,14 @@ export default function BookingHistory() {
                 </div>
 
                 <div className="mt-4 md:mt-0 md:ml-6 flex gap-2">
+                  {/* 查看详情按钮 */}
+                  <button
+                    onClick={() => navigate(`/dashboard/activities/${booking.activity?.id}`)}
+                    className="px-4 py-2 text-sm bg-blue-50 text-blue-600 rounded hover:bg-blue-100"
+                  >
+                    查看详情
+                  </button>
+                  
                   {/* 确认参加按钮 - 只在活动已开始且状态为pending时显示 */}
                   {booking.activity?.startTime && 
                    new Date(booking.activity.startTime) <= new Date() &&

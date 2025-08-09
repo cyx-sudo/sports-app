@@ -35,16 +35,7 @@ export class CommentService {
       throw new Error('您已经评论过该活动');
     }
 
-    // 检查用户是否预约过该活动
-    const booking = db
-      .prepare(
-        'SELECT id FROM bookings WHERE userId = ? AND activityId = ? AND status = ?'
-      )
-      .get(userId, commentData.activityId, 'confirmed');
-
-    if (!booking) {
-      throw new Error('只能评论已参与的活动');
-    }
+    // 移除预约限制，允许任何用户评论活动
 
     const stmt = db.prepare(`
       INSERT INTO comments (userId, activityId, content, rating)
